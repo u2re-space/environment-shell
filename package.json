@@ -1,0 +1,13 @@
+{
+  "name": "environment-shell",
+  "version": "1.0.0",
+  "description": "Extension (transparent) for surrounding content (for content-scripts or chrome extensions), only overlay UI/UX, and any content belong",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

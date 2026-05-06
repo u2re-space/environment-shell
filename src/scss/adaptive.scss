@@ -1,0 +1,15 @@
+@use "lib/variables" as v;
+
+/* Device tray: one host in taskbar (desktop) vs footer (mobile). */
+
+@media (min-width: v.$bp-desktop-min) {
+    .env-device-tray--footer {
+        display: none !important;
+    }
+}
+
+@media (max-width: v.$bp-mobile-max) {
+    .env-device-tray--taskbar {
+        display: none !important;
+    }
+}

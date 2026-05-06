@@ -1,0 +1,11 @@
+/* Reserved: start-menu / app-launcher host (mount beside taskbar or slide-over).
+   Example: <div class="env-shell-app-menu" hidden>…</div> */
+
+.env-shell-app-menu {
+    /* Placeholder keeps selector stable for future SCSS without empty ruleset warnings. */
+    pointer-events: auto;
+}
+
+.env-shell-app-menu:empty {
+    display: none;
+}

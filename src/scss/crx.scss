@@ -1,0 +1,5 @@
+/* COMPAT: Extension / embed hosts may set `data-env-crx="1"` and extend in their bundle. */
+
+.env-shell-root[data-env-crx="1"] {
+    isolation: isolate;
+}

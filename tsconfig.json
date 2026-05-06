@@ -1,0 +1,127 @@
+{
+    "include": ["./src/**/*.ts", "./demo/**/*.ts", "./test/**/*.ts", "./*.js"],
+    "exclude": ["./dist/**/*"],
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "paths": {
+            "views/types": ["../../views/shared/types.ts"],
+            "views/registry": ["../../views/shared/registry.ts"],
+            "views/apis/channel-actions": [
+                "../../projects/subsystem/src/routing/api/channel-actions.ts"
+            ],
+            "views/home-view": ["../../views/home-view/src/index.ts"],
+            "com/config/Settings": ["../../shared/src/other/config/Settings.ts"],
+            "com/config/SettingsTypes": ["../../shared/src/other/config/SettingsTypes.ts"],
+            "com/config/Names": ["../../shared/src/other/config/Names.ts"],
+            "com/core/UniformInterop": [
+                "../../shared/src/routing/channel/UniformInterop.ts"
+            ],
+            "com/service/instructions/CustomInstructions": [
+                "../../projects/subsystem/src/service/instructions/CustomInstructions.ts"
+            ],
+            "boot/ts/*": ["../../shared/src/boot/*"],
+            "views/*": ["../../shared/views/*"],
+            "core/*": ["../../shared/src/*"],
+            "com/*": ["../../shared/src/*"],
+            "shared/*": ["../../shared/src/*"],
+            "@shared/*": ["../../shared/*"],
+            "fonts/*": ["../../shared/assets/fonts/*"],
+            "fest/*": ["../../shared/fest/*"],
+            "fest/dom": ["../../projects/dom.ts/src/index.ts"],
+            "fest/lure": ["../../projects/lur.e/src/index.ts"],
+            "fest/object": ["../../projects/object.ts/src/index.ts"],
+            "fest/core": ["../../projects/core.ts/src/index.ts"],
+            "fest/icon": ["../../projects/icon.ts/src/index.ts"],
+            "fest/fl-ui": ["../../projects/fl.ui/src/index.ts"],
+            "fest/image": ["../../projects/image.ts/src/index.ts"],
+            "fest/ui": ["../../projects/fl.ui/src/index.ts"],
+            "fest/uniform": ["../../projects/uniform.ts/src/index.ts"],
+            "fest/subsystem": ["../../projects/subsystem/src/index.ts"],
+            "fest/polyfill/*": ["../../projects/shared/fest/polyfill/*"],
+            "polyfill/*": ["../../projects/shared/fest/polyfill/*"],
+            "veela-lib": ["../../projects/veela.css/src/scss/index.scss"],
+            "veela-lib/*": ["../../projects/veela.css/src/scss/*"],
+            "frontend/shells/base/index": [
+                "../../../apps/CrossWord/src/frontend/shells/base/index.ts"
+            ],
+            "shells/window": [
+                "../../../apps/CrossWord/src/frontend/ai-slop/window/index.ts"
+            ],
+            "views/apis/channel-actions": [
+                "../../projects/subsystem/src/routing/api/channel-actions.ts"
+            ],
+            "views/apis/channel-invokable": [
+                "../../projects/subsystem/src/routing/api/channel-invokable.ts"
+            ],
+            "shared/routing/registry": [
+                "../../shared/src/routing/core/registry.ts"
+            ],
+            "shared/routing/views": ["../../shared/src/routing/core/views.ts"],
+            "shared/routing/view-prefetch": [
+                "../../shared/src/routing/core/view-prefetch.ts"
+            ],
+            "shared/routing/layer-manager": [
+                "../../shared/src/routing/core/layer-manager.ts"
+            ],
+            "shared/routing/app-layers": [
+                "../../shared/src/routing/core/app-layers.ts"
+            ],
+            "shared/routing/implicit-view-bridge": [
+                "../../shared/src/routing/core/implicit-view-bridge.ts"
+            ],
+            "shared/routing/channel-unknown": [
+                "../../shared/src/routing/core/channel-unknown.ts"
+            ],
+            "shared/routing/view-transitions": [
+                "../../shared/src/routing/core/view-transitions.ts"
+            ],
+            "shared/policies/ingress-pipeline-guard": [
+                "../../shared/src/routing/policies/ingress-pipeline-guard.ts"
+            ],
+            "shared/policies/event-handling-policy": [
+                "../../shared/src/routing/policies/event-handling-policy.ts"
+            ],
+            "shared/native/cws-bridge": [
+                "../../shared/src/routing/native/cws-bridge.ts"
+            ],
+            "shared/native/clipboard-device": [
+                "../../shared/src/routing/native/clipboard-device.ts"
+            ],
+            "shared/styles": ["../../shared/src/styles.ts"],
+            "shared/transport/hub-socket-boot": [
+                "../../shared/src/boot/hub-socket-boot.ts"
+            ],
+            "shared/transport/websocket": [
+                "../../shared/src/boot/websocket.ts"
+            ],
+            "shared/pwa/*": ["../../shared/src/routing/pwa/*"],
+            "shared/config/*": ["../../shared/src/other/config/*"],
+            "shared/utils/*": ["../../shared/src/other/utils/*"],
+            "core/modules/Clipboard": ["../../shared/src/modules/Clipboard.ts"],
+            "core/modules/TemplateManager": [
+                "../../projects/lur.e/src/interactive/modules/TemplateManager.ts"
+            ],
+            "core/text": ["../../shared/src/text.ts"],
+            "core/clipboard-device": [
+                "../../projects/subsystem/runtime/clipboard-device.ts"
+            ],
+            "shells/immersive/index": ["../immersive-shell/src/index.ts"],
+            "shells/content/index": ["../content-shell/src/index.ts"],
+            "shells/minimal/preview": ["../minimal-shell/src/preview.ts"]
+        },
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ESNext", "DOM", "WebWorker"],
+        "esModuleInterop": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowJs": true,
+        "allowArbitraryExtensions": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": false,
+        "declaration": false,
+        "noEmit": true,
+        "experimentalDecorators": true
+    }
+}

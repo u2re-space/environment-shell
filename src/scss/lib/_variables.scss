@@ -1,0 +1,9 @@
+// WHY: Windows use model z + `--env-window-z-boost` from `.env-shell-root`; chrome stays on top.
+$z-shell-home: 0;
+$z-shell-workspace: 1;
+// Fixed shell chrome above wallpaper, home, and boosted window frames.
+$z-shell-chrome: 2147483000;
+
+$bp-mobile-max: 640px;
+$bp-desktop-min: 641px;
+

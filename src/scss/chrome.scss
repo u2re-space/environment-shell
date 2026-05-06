@@ -1,0 +1,119 @@
+@use "lib/variables" as v;
+
+/* Fixed chrome: taskbar (desktop) + FL-UI `ui-statusbar`. */
+
+.env-shell-chrome {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: v.$z-shell-chrome;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    font: 12px ui-sans-serif, system-ui, sans-serif;
+    color: var(--wf-md-on-surface-variant, oklch(0.78 0.03 274));
+    pointer-events: none;
+}
+
+.env-shell-chrome > * {
+    pointer-events: auto;
+}
+
+.env-shell-taskbar {
+    order: 0;
+    display: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem 0.15rem;
+    background: color-mix(in oklch, oklch(0.16 0.02 280) 88%, transparent);
+    border-block-start: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
+    backdrop-filter: blur(10px);
+}
+
+@media (min-width: v.$bp-desktop-min) {
+    .env-shell-taskbar {
+        display: flex;
+    }
+}
+
+.env-shell-taskbar::part(taskbar) {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1;
+    min-inline-size: 0;
+}
+
+.env-shell-taskbar ui-task {
+    cursor: pointer;
+}
+
+.env-shell-taskbar ui-task[data-env-active="true"] {
+    outline: 2px solid color-mix(in oklch, var(--wf-md-primary, oklch(0.74 0.14 294)) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+.env-shell-taskbar__tray-host {
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+}
+
+.env-ui-statusbar {
+    order: 1;
+    padding: 0.35rem 0.65rem calc(0.35rem + env(safe-area-inset-bottom, 0));
+    background: color-mix(in oklch, oklch(0.14 0.02 280) 82%, transparent);
+    border-block-start: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 12%, transparent));
+    backdrop-filter: blur(10px);
+}
+
+.env-ui-statusbar__intro p {
+    margin: 0.1rem 0;
+    opacity: 0.92;
+}
+
+.env-ui-statusbar__right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.env-status-bar__tray {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.env-status-bar__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.12rem 0.35rem;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--wf-md-on-surface, white) 8%, transparent);
+    border: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
+    line-height: 1;
+}
+
+.env-status-bar__chip ui-icon {
+    font-size: 1.15rem;
+    display: block;
+}
+
+.env-status-bar__pct {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.95;
+}
+
+.env-status-bar__meta {
+    margin: 0;
+    opacity: 0.88;
+    font-size: 11px;
+}

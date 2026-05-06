@@ -1,0 +1,65 @@
+/* WHY: View roots fill the frame body edge-to-edge; inner spacing lives in each view (e.g. settings). */
+.wf-view-host,
+.wf-view-placeholder {
+    box-sizing: border-box;
+    min-block-size: 0;
+    min-inline-size: 0;
+    flex: 1 1 0%;
+    margin: 0;
+    padding: 0;
+    /* WHY: Outer clip; inner views (AirPad, explorer) own scroll regions — avoids nested “whole window” scroll. */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+}
+
+.wf-view-host > .wf-mounted-view {
+    flex: 1 1 0%;
+    min-block-size: 0;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-self: stretch;
+}
+
+.wf-view-placeholder__title {
+    font: 600 1rem/1.3 system-ui, sans-serif;
+    margin: 0 0 0.5rem;
+}
+
+.wf-view-placeholder__hint {
+    margin: 0;
+    opacity: 0.75;
+    font: 400 0.875rem/1.4 system-ui, sans-serif;
+}
+
+/* WHY: Window frames participate in the same workspace stack as home; border tweak only (z comes from model + `--env-window-z-boost`). */
+.env-shell-workspace .wf-frame {
+    border-color: color-mix(
+        in oklch,
+        var(--wf-md-outline-variant, oklch(1 0.02 280 / 12%)) 130%,
+        transparent
+    );
+}
+
+/*
+ * WHY: `.wf-frame-body` may use `transform: translateZ(0)` (containing block for embedded views).
+ * Without an explicit stack order, composited body content can paint above the titlebar and swallow pointer events.
+ */
+.env-shell-workspace .wf-frame .wf-titlebar {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.env-shell-workspace .wf-frame .wf-frame-body {
+    position: relative;
+    z-index: 0;
+}
+
+.env-shell-workspace .wf-frame .wf-resize {
+    z-index: 4;
+    pointer-events: auto;
+}

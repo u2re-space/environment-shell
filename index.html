@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>immersive-shell demo (HTTPS)</title>
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc" />
+        <!-- Demo bundle: `/assets/stock.jpg` (wallpaper), `/assets/shell-bg.png` (fallback), `/demo/sample.md` (viewer). -->
+        <link rel="preload" href="/assets/stock.jpg" as="image" />
+        <link rel="preload" href="/demo/sample.md" as="fetch" crossorigin />
+        <link rel="stylesheet" href="/src/scss/index-page.scss" />
+    </head>
+    <body>
+        <noscript>
+            <p class="env-noscript">This immersive shell demo requires JavaScript.</p>
+        </noscript>
+        <main id="app"></main>
+        <script type="module" src="/demo/boot.ts"></script>
+    </body>
+</html>

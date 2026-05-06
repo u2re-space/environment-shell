@@ -1,0 +1,10 @@
+/* environment-shell — default layout + chrome for wallpaper / home / window-frame hosts.
+   Import in app entry: `import "environment-shell/scss/main.scss"` (or relative path). */
+
+@use "root";
+@use "dwm";
+@use "home";
+@use "chrome";
+@use "adaptive";
+@use "app-menu";
+@use "crx";

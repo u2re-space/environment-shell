@@ -41,9 +41,6 @@
             "polyfill/*": ["../../projects/shared/fest/polyfill/*"],
             "veela-lib": ["../../projects/veela.css/src/scss/index.scss"],
             "veela-lib/*": ["../../projects/veela.css/src/scss/*"],
-            "frontend/shells/base/index": [
-                "../../../apps/CrossWord/src/frontend/shells/base/index.ts"
-            ],
             "shells/window": [
                 "../../../apps/CrossWord/src/frontend/ai-slop/window/index.ts"
             ],

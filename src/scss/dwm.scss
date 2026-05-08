@@ -63,3 +63,17 @@
     z-index: 4;
     pointer-events: auto;
 }
+
+/* WHY: Match window-frame print reset — flex + `overflow: hidden` hosts must not trap paginated prose. */
+@media print {
+    .wf-view-host,
+    .wf-view-host > .wf-mounted-view {
+        display: block !important;
+        overflow: visible !important;
+        flex: none !important;
+        align-self: stretch !important;
+        max-block-size: none !important;
+        min-block-size: 0 !important;
+        block-size: auto !important;
+    }
+}

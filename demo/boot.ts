@@ -39,6 +39,7 @@ workspace.className = "env-shell-workspace";
 app.appendChild(workspace);
 
 const viewWindows = createWorkspaceWindowLayer(workspace, {
+    overlayMountHost: app,
     readerWindow: {
         title: "Markdown",
         content: viewerBody,
@@ -59,6 +60,7 @@ function openViewerForShell(): void {
 }
 
 const shellContext: ShellContext = {
+    ...viewWindows.shellContext,
     navigate: (viewId, opts) => {
         navEcho.value = `shell.navigate("${viewId}")`;
         const id = String(viewId || "").trim();

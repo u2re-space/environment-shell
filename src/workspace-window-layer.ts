@@ -5,6 +5,7 @@
  */
 import type { ShellContext, ViewModule, ViewOptions } from "views/types";
 import { numberRef } from "fest/object";
+import { resolveOverlayMountPoint as resolveGlobalOverlay, resolveShellOverlaysMount } from "boot/shell-slots";
 
 import {
     createChromeModel,
@@ -18,6 +19,7 @@ import {
     isMarkdownViewManagedWindowKey
 } from "../../window-frame/src/views/markdown-view-window";
 import { mountViewModule } from "../../window-frame/src/views/view-mount";
+import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay.ts";
 
 export type BuiltInReaderWindow = {
     title?: string;
@@ -32,6 +34,13 @@ export type WorkspaceWindowLayerOptions = {
      * When omitted, `openView("viewer" | "markdown" | …)` loads full `views/markdown-view` — see `markdown-view-window.ts`.
      */
     readerWindow?: BuiltInReaderWindow;
+    /**
+     * App root (e.g. `#app` / `.env-shell-root`) when no `cw-shell-*` exists: creates `[data-env-shell-overlays]`
+     * for stacking menus/modals above `.wf-frame` (see {@link getOrCreateEnvironmentOverlayMount}).
+     */
+    overlayMountHost?: HTMLElement | null;
+    /** When set, transient UI prefers this host's shadow `[data-shell-overlays]` over `overlayMountHost`. */
+    environmentShellHost?: HTMLElement | null;
 };
 
 type ManagedWindow = {
@@ -119,6 +128,18 @@ export function createWorkspaceWindowLayer(
     };
 
     const shellContext: ShellContext = {};
+
+    const envOverlayMount =
+        options.overlayMountHost ? getOrCreateEnvironmentOverlayMount(options.overlayMountHost) : null;
+
+    shellContext.resolveOverlayMountPoint = (anchor) => {
+        if (options.environmentShellHost) {
+            const fromShell = resolveShellOverlaysMount(options.environmentShellHost);
+            if (fromShell) return fromShell;
+        }
+        if (envOverlayMount) return envOverlayMount;
+        return resolveGlobalOverlay(anchor ?? null);
+    };
 
     const openReaderWindow = (): void => {
         const rw = options.readerWindow;

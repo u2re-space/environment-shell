@@ -28,6 +28,11 @@ export {
     type WorkspaceWindowLayerOptions
 } from "./workspace-window-layer";
 
+export {
+    ENV_SHELL_OVERLAYS_ATTR,
+    getOrCreateEnvironmentOverlayMount
+} from "./environment-overlay";
+
 /** Default `localStorage` key for {@link initializeAppCanvasLayer} wallpaper URL (`fest/image` Canvas-2). */
 export const ENV_SHELL_WALLPAPER_STORAGE_KEY = "rs-wallpaper-image";
 

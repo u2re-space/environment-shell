@@ -4,6 +4,8 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "paths": {
+            "views/types": ["../../views/shared/types.ts"],
+            "views/home-view": ["../../views/home-view/src/index.ts"],
             "fest/dom": ["../../projects/dom.ts/src/index.ts"],
             "fest/lure": ["../../projects/lur.e/src/index.ts"],
             "fest/object": ["../../projects/object.ts/src/index.ts"],

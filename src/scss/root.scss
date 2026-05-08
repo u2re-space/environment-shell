@@ -46,6 +46,13 @@
 
     /* Added to `mountWindowFrame` z-index so `.wf-frame` stacks above the home layer. */
     --env-window-z-boost: 400;
+
+    /* Optional: home-view reads this for bottom padding above fixed `.env-shell-chrome` (defaults exist in SpeedDial.scss). */
+    --env-shell-chrome-stack-reserve: 5.25rem;
+
+    @media (min-width: v.$bp-desktop-min) {
+        --env-shell-chrome-stack-reserve: 7.5rem;
+    }
 }
 
 .env-shell-wallpaper {

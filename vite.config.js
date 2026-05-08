@@ -36,6 +36,11 @@ export default defineConfig({
     plugins,
     resolve: {
         alias: getViewResolveAliases(pkgRoot, [
+            {
+                /* WHY: `getViewResolveAliases` + local `views/*` do not resolve this package — demo dynamic import uses `views/home-view`. */
+                find: "views/home-view",
+                replacement: resolve(viewsRoot, "home-view/src/index.ts")
+            },
             { find: "core/config/Settings", replacement: resolve(sharedSrc, "other/config/Settings.ts") },
             { find: "core/config/SettingsTypes", replacement: resolve(sharedSrc, "other/config/SettingsTypes.ts") },
             /* WHY: Settings UI expects async {@link loadSettings} + registry snapshot (not subsystem/runtime stubs). */

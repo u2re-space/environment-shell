@@ -16,6 +16,8 @@ import {
     type EnvironmentTaskbarOptions,
     type MountTaskBarResult
 } from "./components/taskbar";
+import { isEnvironmentShellContainerHost } from "./environment-shell-container";
+import { SHELL_SLOT } from "boot/shell-slots";
 
 export * from "./components/statusbar";
 export * from "./components/taskbar";
@@ -32,6 +34,13 @@ export {
     ENV_SHELL_OVERLAYS_ATTR,
     getOrCreateEnvironmentOverlayMount
 } from "./environment-overlay";
+
+export {
+    ENV_SHELL_CONTAINER_TAG,
+    defineEnvironmentShellContainer,
+    isEnvironmentShellContainerHost,
+    type EnvironmentShellContainerElement
+} from "./environment-shell-container";
 
 /** Default `localStorage` key for {@link initializeAppCanvasLayer} wallpaper URL (`fest/image` Canvas-2). */
 export const ENV_SHELL_WALLPAPER_STORAGE_KEY = "rs-wallpaper-image";
@@ -91,6 +100,9 @@ export function mountEnvironmentChrome(
         root.append(statusBar);
     }
 
+    if (isEnvironmentShellContainerHost(host)) {
+        root.slot = SHELL_SLOT.overlay;
+    }
     host.appendChild(root);
 
     return {

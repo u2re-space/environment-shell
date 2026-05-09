@@ -42,7 +42,8 @@
     position: relative;
     isolation: isolate;
     min-block-size: 100dvb;
-    overflow: clip;
+    /* Sync with shadow `:host`: do not clip `position:fixed` descendants (overlay slot context menus). */
+    overflow: visible;
 
     /* Added to `mountWindowFrame` z-index so `.wf-frame` stacks above the home layer. */
     --env-window-z-boost: 400;

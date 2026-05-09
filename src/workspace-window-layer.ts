@@ -21,6 +21,15 @@ import {
 import { mountViewModule } from "../../window-frame/src/views/view-mount";
 import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay.ts";
 
+/** Direct-child `.wf-frame` tagged via {@link mountWindowFrame}'s `managedViewKey`. */
+function findKeyedFrame(workspace: HTMLElement, key: string): Element | null {
+    const selKey =
+        typeof CSS !== "undefined" && typeof CSS.escape === "function"
+            ? CSS.escape(key)
+            : key.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return workspace.querySelector(`:scope > section.wf-frame[data-wf-managed-view="${selKey}"]`);
+}
+
 export type BuiltInReaderWindow = {
     title?: string;
     /** Pre-built body (e.g. {@link buildViewerView}). */
@@ -147,10 +156,18 @@ export function createWorkspaceWindowLayer(
 
         const key = MARKDOWN_VIEW_MANAGED_WINDOW_KEY;
         const ex = managed.get(key);
-        if (ex) {
+        if (ex && findKeyedFrame(workspace, key)) {
             ex.model.visible.value = true;
             elevateModel(ex.model);
             return;
+        }
+        if (ex && !findKeyedFrame(workspace, key)) {
+            managed.delete(key);
+            try {
+                ex.disposeFrame();
+            } catch {
+                /* detached */
+            }
         }
 
         const seed = rw.seed || {};
@@ -165,6 +182,7 @@ export function createWorkspaceWindowLayer(
 
         let disposeFrame: () => void = () => {};
         disposeFrame = mountWindowFrame(workspace, model, rw.content, () => elevateModel(model), {
+            managedViewKey: key,
             onClose: () => {
                 managed.get(key)?.disposeFrame();
                 managed.delete(key);
@@ -185,10 +203,20 @@ export function createWorkspaceWindowLayer(
         }
 
         const existing = managed.get(id);
-        if (existing) {
+        if (existing && findKeyedFrame(workspace, id)) {
             existing.model.visible.value = true;
             elevateModel(existing.model);
             return;
+        }
+        if (existing && !findKeyedFrame(workspace, id)) {
+            /* WHY: `mountViewModule(host.replaceChildren)` on the workspace drops `.wf-frame` nodes; reconcile stale refs. */
+            existing.disposeView?.();
+            managed.delete(id);
+            try {
+                existing.disposeFrame();
+            } catch {
+                /* frame already detached */
+            }
         }
 
         const loader = viewLoaderForId(id);
@@ -209,6 +237,7 @@ export function createWorkspaceWindowLayer(
 
         let disposeFrame: () => void = () => {};
         const frameOpts: MountWindowFrameOptions = {
+            managedViewKey: id,
             onClose: () => {
                 const m = managed.get(id);
                 m?.disposeView?.();
@@ -265,7 +294,7 @@ export function createWorkspaceWindowLayer(
     const focusWindow = (viewId: string): boolean => {
         const id = normalizeMarkdownViewWindowId(String(viewId || ""));
         const m = managed.get(id);
-        if (!m) return false;
+        if (!m || !findKeyedFrame(workspace, id)) return false;
         m.model.visible.value = true;
         elevateModel(m.model);
         return true;

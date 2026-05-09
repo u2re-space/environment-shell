@@ -1,0 +1,56 @@
+/**
+ * Shadow-only layout for `<env-shell-container>`: underlying / main / overlays stack.
+ * Document-level tokens (e.g. `.env-shell-root`) stay in `root.scss`.
+ */
+
+:host {
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+    isolation: isolate;
+    /* WHY: `overflow: clip` breaks `position: fixed` overlays (context menus in overlay slot clip to wrong box). */
+    overflow: visible;
+    min-block-size: 100dvb;
+    color-scheme: light dark;
+}
+
+.esc-stack {
+    display: grid;
+    grid-template: 1fr / 1fr;
+    min-block-size: inherit;
+    box-sizing: border-box;
+}
+
+.esc-layer {
+    grid-area: 1 / 1;
+    min-block-size: inherit;
+    box-sizing: border-box;
+}
+
+/* WHY: Wallpaper / canvas sits behind; never intercepts hits; clip bleed without clipping `fixed` overlays. */
+.esc-underlying {
+    z-index: 0;
+    pointer-events: none;
+    overflow: clip;
+}
+
+/* Main workspace: home, frames host, routed content. */
+.esc-main {
+    z-index: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-block-size: inherit;
+    pointer-events: auto;
+    /* Allow `.wf-frame` / portaled overlays to escape this layer; clipping host would hide floating windows. */
+    overflow: visible;
+}
+
+/* Menus / modals / env chrome — children opt into pointer-events. */
+.esc-overlays {
+    z-index: 2;
+    pointer-events: none;
+    position: relative;
+    overflow: visible;
+}

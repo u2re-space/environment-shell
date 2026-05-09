@@ -13,9 +13,14 @@ import "../src/scss/main.scss";
 import { mountViewModule } from "../../window-frame/src/views/view-mount.ts";
 import { buildViewerView } from "../../window-frame/src/views/viewer-view.ts";
 import { createWorkspaceWindowLayer } from "../src/workspace-window-layer.ts";
-import { mountEnvironmentChrome, seedEnvironmentWallpaperIfUnset } from "../src/index";
+import {
+    defineEnvironmentShellContainer,
+    mountEnvironmentChrome,
+    seedEnvironmentWallpaperIfUnset
+} from "../src/index";
 
 seedEnvironmentWallpaperIfUnset("/assets/stock.jpg");
+defineEnvironmentShellContainer();
 
 const selectedPath = ref("/demo/sample.md");
 const viewerStatus = ref("(idle)");
@@ -27,9 +32,9 @@ const viewerBody = buildViewerView(selectedPath, viewerStatus);
 let setFocusedTaskId: ((id: "home" | "viewer") => void) | null = null;
 
 const app = document.getElementById("app") ?? document.body;
-app.classList.add("env-shell-root", "wf-demo-root");
 
 const wallpaperHost = document.createElement("div");
+wallpaperHost.slot = "underlying";
 wallpaperHost.className = "env-shell-wallpaper";
 initializeAppCanvasLayer(wallpaperHost);
 app.appendChild(wallpaperHost);
@@ -38,8 +43,20 @@ const workspace = document.createElement("div");
 workspace.className = "env-shell-workspace";
 app.appendChild(workspace);
 
+/** WHY: `mountViewModule` uses `replaceChildren` on its host; mount home into a nested node so floating `.wf-frame` siblings are not wiped on remount/HMR. */
+const homeMount = document.createElement("div");
+homeMount.className = "env-shell-home-mount";
+homeMount.style.display = "flex";
+homeMount.style.flex = "1 1 auto";
+homeMount.style.flexDirection = "column";
+homeMount.style.alignSelf = "stretch";
+homeMount.style.minHeight = "0";
+homeMount.style.minWidth = "0";
+workspace.appendChild(homeMount);
+
 const viewWindows = createWorkspaceWindowLayer(workspace, {
     overlayMountHost: app,
+    environmentShellHost: app,
     readerWindow: {
         title: "Markdown",
         content: viewerBody,
@@ -84,7 +101,7 @@ const shellContext: ShellContext = {
     }
 };
 
-void mountViewModule(() => import("views/home-view"), workspace, { shellContext }).catch((err) => {
+void mountViewModule(() => import("views/home-view"), homeMount, { shellContext }).catch((err) => {
     console.warn("[environment-shell] home-view failed", err);
     workspace.innerHTML =
         `<p style="color:#eee;padding:1rem;font-family:system-ui">Home view failed to load. Check console.</p>`;

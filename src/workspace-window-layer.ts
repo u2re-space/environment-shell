@@ -65,7 +65,6 @@ const VIEW_TITLES: Record<string, string> = {
     viewer: "Markdown",
     explorer: "Explorer",
     settings: "Settings",
-    airpad: "AirPad",
     workcenter: "Work Center",
     history: "History",
     editor: "Editor",
@@ -84,8 +83,6 @@ function viewLoaderForId(viewId: string): (() => Promise<ViewModule>) | null {
             return () => import("../../../views/explorer-view/src/index") as unknown as Promise<ViewModule>;
         case "settings":
             return () => import("../../../views/settings-view/src/index") as unknown as Promise<ViewModule>;
-        case "airpad":
-            return () => import("../../../views/airpad-view/src/index") as unknown as Promise<ViewModule>;
         case "workcenter":
             return () => import("../../../views/workcenter-view/src/index") as unknown as Promise<ViewModule>;
         case "history":

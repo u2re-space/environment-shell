@@ -3,6 +3,7 @@
  * Port 443 + certs via shared helpers (see markdown-view).
  */
 import { resolve } from "node:path";
+import { existsSync } from "node:fs";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import { defineConfig, searchForWorkspaceRoot } from "vite";
 import { getViewResolveAliases, workspaceRoot, viewsRoot } from "../../views/view-resolve-aliases.js";
@@ -30,6 +31,15 @@ const plugins = useHttps ? (projectSsl !== null ? [] : [basicSsl()]) : [];
 const serverHttps = !useHttps ? false : projectSsl !== null ? projectSsl : undefined;
 
 const viteDevOrigin = (process.env.VITE_DEV_ORIGIN || "").trim();
+
+const fsAllow = [
+    searchForWorkspaceRoot(pkgRoot),
+    workspaceRoot,
+    viewsRoot,
+    resolve(workspaceRoot, "modules/views"),
+    shellsRoot
+];
+if (existsSync(crosswordFrontend)) fsAllow.push(crosswordFrontend);
 
 export default defineConfig({
     root: pkgRoot,
@@ -65,14 +75,7 @@ export default defineConfig({
         ...(viteDevOrigin ? { origin: viteDevOrigin } : {}),
         https: serverHttps,
         fs: {
-            allow: [
-                searchForWorkspaceRoot(pkgRoot),
-                workspaceRoot,
-                viewsRoot,
-                crosswordFrontend,
-                resolve(workspaceRoot, "modules/views"),
-                shellsRoot
-            ]
+            allow: fsAllow
         }
     },
     build: {

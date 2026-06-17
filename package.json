@@ -11,7 +11,7 @@
   },
   "scripts": {
       "dev": "vite --config vite.config.js",
-      "dev:8443": "VIEW_DEV_PORT=8443 vite --config vite.config.js",
+      "dev:8434": "VIEW_DEV_PORT=8434 vite --config vite.config.js",
       "demo": "npm run dev",
       "ssl:localhost": "mkdir -p certs && openssl req -x509 -newkey rsa:2048 -nodes -keyout certs/key.pem -out certs/cert.pem -days 825 -subj '/CN=localhost'",
       "build": "vite build --config vite.config.js",

@@ -22,15 +22,17 @@
 
 .env-shell-taskbar {
     order: 0;
+    /* WHY: Hidden on phone; shown via media OR `[data-desktop]` (JS mq — adopted-sheet media can miss). */
     display: none;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.55rem 0.15rem;
+    gap: 0.45rem;
+    padding: 0.35rem 0.65rem 0.25rem;
     background: color-mix(in oklch, oklch(0.16 0.02 280) 88%, transparent);
     border-block-start: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
     backdrop-filter: blur(10px);
+    color: var(--wf-md-on-surface, oklch(0.93 0.02 274));
 }
 
 @media (min-width: v.$bp-desktop-min) {
@@ -39,30 +41,62 @@
     }
 }
 
+.env-shell-chrome[data-desktop] .env-shell-taskbar {
+    display: flex;
+}
+
 .env-shell-taskbar::part(taskbar) {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.45rem;
     flex: 1;
     min-inline-size: 0;
+    inline-size: 100%;
+}
+
+.env-shell-taskbar__pins,
+.env-shell-taskbar__windows {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.3rem;
+    min-inline-size: 0;
+}
+
+.env-shell-taskbar__windows {
+    flex: 1 1 auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
 }
 
 .env-shell-taskbar ui-task {
     cursor: pointer;
+    color: inherit;
+    background: color-mix(in oklch, var(--wf-md-on-surface, white) 8%, transparent);
+    border: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
 }
 
-.env-shell-taskbar ui-task[data-env-active="true"] {
+.env-shell-taskbar ui-task[data-env-active="true"],
+.env-shell-taskbar ui-task[data-active],
+.env-shell-taskbar ui-task[data-focus] {
     outline: 2px solid color-mix(in oklch, var(--wf-md-primary, oklch(0.74 0.14 294)) 55%, transparent);
     outline-offset: 2px;
-    border-radius: 0.5rem;
+    opacity: 1;
+    background: color-mix(in oklch, var(--wf-md-primary, oklch(0.74 0.14 294)) 18%, transparent);
+}
+
+.env-shell-taskbar ui-task[data-minimized] {
+    opacity: 0.55;
 }
 
 .env-shell-taskbar__tray-host {
     margin-inline-start: auto;
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
 }
 
 .env-ui-statusbar {

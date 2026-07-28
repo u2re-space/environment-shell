@@ -23,12 +23,16 @@ export * from "./components/statusbar";
 export * from "./components/taskbar";
 export * from "./components/wallpaper";
 
-/** Floating `.wf-frame` layer over workspace home — lazy view modules + optional reader body. */
+/** Floating `ui-window` layer over workspace home — lazy view modules + optional reader body. */
 export {
     createWorkspaceWindowLayer,
     type BuiltInReaderWindow,
-    type WorkspaceWindowLayerOptions
+    type WorkspaceWindowLayerOptions,
+    type WorkspaceViewLoaderMap,
+    type WorkspaceWindowLayer
 } from "./workspace-window-layer";
+
+export { mountUiWindow, type MountUiWindowOptions } from "./mount-ui-window";
 
 export {
     ENV_SHELL_OVERLAYS_ATTR,
@@ -39,6 +43,7 @@ export {
     ENV_SHELL_CONTAINER_TAG,
     defineEnvironmentShellContainer,
     isEnvironmentShellContainerHost,
+    createEnvironmentShellContainer,
     type EnvironmentShellContainerElement
 } from "./environment-shell-container";
 
@@ -100,6 +105,17 @@ export function mountEnvironmentChrome(
         root.append(statusBar);
     }
 
+    // WHY: Drive taskbar visibility from JS mq as well as CSS media (desktop screens).
+    const desktopMq =
+        typeof matchMedia === "function" ? matchMedia("(min-width: 641px)") : null;
+    const syncDesktopAttr = (): void => {
+        const desktop = desktopMq ? desktopMq.matches : true;
+        root.toggleAttribute("data-desktop", desktop);
+        root.dataset.chromeLayout = desktop ? "desktop" : "mobile";
+    };
+    syncDesktopAttr();
+    desktopMq?.addEventListener?.("change", syncDesktopAttr);
+
     if (isEnvironmentShellContainerHost(host)) {
         root.slot = SHELL_SLOT.overlay;
     }
@@ -110,6 +126,9 @@ export function mountEnvironmentChrome(
         device,
         statusBar,
         taskbar,
-        disposeDevice: () => device.dispose()
+        disposeDevice: () => {
+            desktopMq?.removeEventListener?.("change", syncDesktopAttr);
+            device.dispose();
+        }
     };
 }

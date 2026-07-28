@@ -1,6 +1,17 @@
+/*
+ * Filename: environment-shell-container.ts
+ * FullPath: modules/shells/environment-shell/src/environment-shell-container.ts
+ * Change date and time: 07.10.00_29.07.2026
+ * Reason for changes: Fix createElement NotSupportedError — no host attributes in constructor.
+ */
 /**
  * Multi-layer environment host: `underlying` (back), default `main` content, `overlay` (front).
  * Aligns with {@link SHELL_SLOT} from `boot/shell-slots` for cross-shell consistency.
+ *
+ * INVARIANT: Custom element constructor must NOT set attributes (incl. via `element.style`).
+ * Chromium throws `NotSupportedError: The result must not have attributes` on
+ * `document.createElement("env-shell-container")` if the constructor writes attrs.
+ * Host display/box-sizing live in `:host` SCSS instead.
  */
 //@ts-ignore vite inline
 import containerStyles from "./scss/environment-shell-container.scss?inline";
@@ -40,19 +51,35 @@ template.innerHTML = `
 </div>`;
 
 class EnvironmentShellContainer extends HTMLElement implements EnvironmentShellContainerElement {
+    #ready = false;
+
     get overlayMount(): HTMLElement | null {
+        this.#ensureShadow();
         return this.shadowRoot?.querySelector("[data-shell-overlays]") ?? null;
     }
 
     constructor() {
         super();
-        const root = this.attachShadow({ mode: "open" });
-        root.appendChild(template.content.cloneNode(true));
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(containerStyles as string);
-        root.adoptedStyleSheets = [sheet];
-        this.style.display = "block";
-        this.style.boxSizing = "border-box";
+        // WHY: only attach shadow + clone template — never setAttribute / .style here.
+        this.#ensureShadow();
+    }
+
+    connectedCallback(): void {
+        this.#ensureShadow();
+    }
+
+    #ensureShadow(): void {
+        if (this.#ready && this.shadowRoot) return;
+        const root = this.shadowRoot ?? this.attachShadow({ mode: "open" });
+        if (!root.querySelector(".esc-stack")) {
+            root.appendChild(template.content.cloneNode(true));
+        }
+        if (root.adoptedStyleSheets.length === 0) {
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(containerStyles as string);
+            root.adoptedStyleSheets = [sheet];
+        }
+        this.#ready = true;
     }
 }
 
@@ -65,6 +92,25 @@ export function defineEnvironmentShellContainer(): typeof EnvironmentShellContai
         defined = true;
     }
     return EnvironmentShellContainer;
+}
+
+/**
+ * Safe factory — prefers `new` after define so constructor attribute rules are explicit.
+ * Falls back to `createElement` once the CE is upgraded.
+ */
+export function createEnvironmentShellContainer(): EnvironmentShellContainerElement {
+    defineEnvironmentShellContainer();
+    const Ctor = customElements.get(ENV_SHELL_CONTAINER_TAG) as
+        | (new () => EnvironmentShellContainerElement)
+        | undefined;
+    if (Ctor) {
+        try {
+            return new Ctor();
+        } catch (err) {
+            console.warn("[env-shell-container] `new` failed, falling back to createElement", err);
+        }
+    }
+    return document.createElement(ENV_SHELL_CONTAINER_TAG) as EnvironmentShellContainerElement;
 }
 
 export function isEnvironmentShellContainerHost(el: unknown): el is EnvironmentShellContainerElement {

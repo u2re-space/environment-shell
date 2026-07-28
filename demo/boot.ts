@@ -1,6 +1,6 @@
 /**
  * WHY: Full environment demo — HTTPS :443, `ui-canvas` wallpaper (`/assets/stock.jpg`),
- * oriented home launcher, floating view windows over home, FL-UI `ui-statusbar` + `ui-taskbar` (tasking).
+ * oriented home launcher, floating `ui-window` views over home, FL-UI `ui-statusbar` + `ui-taskbar` (tasking).
  */
 import type { ShellContext } from "views/types";
 import { ref } from "fest/object";
@@ -25,11 +25,13 @@ defineEnvironmentShellContainer();
 const selectedPath = ref("/demo/sample.md");
 const viewerStatus = ref("(idle)");
 const navEcho = ref("");
-const focusedTaskId = ref<"home" | "viewer">("home");
+const focusedTaskId = ref<string>("home");
 
 const viewerBody = buildViewerView(selectedPath, viewerStatus);
 
-let setFocusedTaskId: ((id: "home" | "viewer") => void) | null = null;
+let setFocusedTaskId: ((id: string) => void) | null = null;
+let syncWindowTasks: ((windows: import("../src/components/taskbar").EnvWindowTaskDescriptor[]) => void) | null =
+    null;
 
 const app = document.getElementById("app") ?? document.body;
 
@@ -61,10 +63,26 @@ const viewWindows = createWorkspaceWindowLayer(workspace, {
         title: "Markdown",
         content: viewerBody,
         seed: { x: 96, y: 96, w: 420, h: 340 }
+    },
+    // WHY: loaders must be host-supplied — relative package paths break under CWSP symlink consumers.
+    viewLoaders: {
+        explorer: () => import("views/explorer") as any,
+        settings: () => import("views/settings") as any,
+        workcenter: () => import("views/workcenter") as any,
+        history: () => import("views/history") as any,
+        editor: () => import("views/editor") as any,
+        viewer: () => import("views/markdown") as any,
+        markdown: () => import("views/markdown") as any
+    },
+    onTaskingChange: (windows) => {
+        syncWindowTasks?.(windows);
+        const focused = windows.find((w) => w.focused);
+        if (focused) setFocusedTaskId?.(focused.id);
     }
 });
 
 function focusHomeShell(): void {
+    viewWindows.blurWindows();
     setFocusedTaskId?.("home");
 }
 
@@ -126,7 +144,15 @@ const chromeResult = mountEnvironmentChrome(app, {
         },
         onViewer: () => {
             openViewerForShell();
+        },
+        onWindowTask: (viewId) => {
+            navEcho.value = `task.window(${viewId})`;
+            if (!viewWindows.focusWindow(viewId)) {
+                void viewWindows.shellContext.openView?.(viewId);
+            }
+            setFocusedTaskId?.(viewId);
         }
     }
 });
 setFocusedTaskId = chromeResult.taskbar?.setFocusedTaskId ?? null;
+syncWindowTasks = chromeResult.taskbar?.syncWindowTasks ?? null;

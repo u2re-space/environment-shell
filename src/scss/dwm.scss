@@ -36,12 +36,51 @@
 }
 
 /* WHY: Window frames participate in the same workspace stack as home; border tweak only (z comes from model + `--env-window-z-boost`). */
-.env-shell-workspace .wf-frame {
+.env-shell-workspace .wf-frame,
+.env-shell-workspace ui-window.env-ui-window {
     border-color: color-mix(
         in oklch,
         var(--wf-md-outline-variant, oklch(1 0.02 280 / 12%)) 130%,
         transparent
     );
+}
+
+/* WHY: ui-window content slot must fill chrome body for mounted CWSP views. */
+.env-shell-workspace ui-window.env-ui-window {
+    --env-window-z-boost: var(--env-window-z-boost, 0);
+}
+
+/* DWM maximize: fill workspace with inset (inline geometry also set in mount-ui-window). */
+.env-shell-workspace ui-window.env-ui-window[data-desk-max],
+.env-shell-workspace ui-window.env-ui-window[maximized]:not([data-mobile-max]) {
+    box-sizing: border-box;
+}
+
+.env-shell-workspace .env-ui-window__body,
+.env-shell-workspace .env-ui-window__view-host,
+.env-shell-workspace .wf-mounted-view {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 0;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Home launcher fills workspace under floating windows. */
+.env-shell-home-mount,
+.env-shell-workspace .view-home,
+.env-shell-workspace .env-home-workspace,
+.env-shell-workspace .speed-dial-root {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    min-inline-size: 0;
+    inline-size: 100%;
+    block-size: 100%;
 }
 
 /*

@@ -151,3 +151,16 @@
     opacity: 0.88;
     font-size: 11px;
 }
+
+/*
+ * WHY: While a managed ui-window is in native-mode, hide env taskbar/statusbar so the
+ * mono task owns the full surface (WCO / standalone stretch).
+ */
+.env-shell-root[data-env-native-task],
+env-shell-container[data-env-native-task] {
+    .env-shell-chrome {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}

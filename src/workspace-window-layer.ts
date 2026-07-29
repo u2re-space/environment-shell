@@ -1,8 +1,8 @@
 /*
  * Filename: workspace-window-layer.ts
  * FullPath: modules/shells/environment-shell/src/workspace-window-layer.ts
- * Change date and time: 06.35.00_29.07.2026
- * Reason for changes: Focus raises z-index + DOM order; emit tasking snapshots for desktop taskbar.
+ * Change date and time: 09.55.00_29.07.2026
+ * Reason for changes: nativeMode promote/restore; Home exits native; mono startNative.
  */
 /**
  * WHY: Home (`mountViewModule` into workspace) stays under floating `ui-window`
@@ -101,6 +101,11 @@ export type WorkspaceWindowLayerOptions = {
     viewTitles?: Record<string, string>;
     /** Desktop taskbar / tasking: fired when open set or focus changes. */
     onTaskingChange?: (windows: EnvWindowTaskDescriptor[]) => void;
+    /**
+     * Open these view ids already in `native-mode` (mono `/explorer?native=1`).
+     * Empty = never auto-native; host can still promote via `window-native`.
+     */
+    startNativeViewIds?: string[];
 };
 
 type ManagedWindow = {
@@ -160,6 +165,10 @@ export type WorkspaceWindowLayer = {
     focusWindow: (viewId: string) => boolean;
     /** Clear window focus markers (e.g. when Home task is selected). */
     blurWindows: () => void;
+    /** Promote a managed window to `native-mode` (mono/task). */
+    enterNative: (viewId: string) => boolean;
+    /** Exit native on one view or all. */
+    exitNative: (viewId?: string) => void;
     /** Snapshot of open managed windows for taskbar sync. */
     listWindowTasks: () => EnvWindowTaskDescriptor[];
     /** Currently focused managed window key (or null when home / none). */
@@ -208,12 +217,23 @@ export function createWorkspaceWindowLayer(
         }
     };
 
+    const exitNativeExcept = (keepKey: string | null): void => {
+        for (const [k, m] of managed) {
+            if (keepKey && k === keepKey) continue;
+            if (m.model.nativeMode?.value) {
+                m.model.nativeMode.value = false;
+            }
+        }
+    };
+
     const elevateModel = (model: WindowChromeModel, key: string): void => {
         topZ.value += 1;
         model.z.value = topZ.value;
         model.minimized.value = false;
         model.visible.value = true;
         focusedKey = key;
+        // WHY: only one native mono task at a time.
+        if (model.nativeMode?.value) exitNativeExcept(key);
 
         const frame = findKeyedFrame(workspace, key);
         if (frame) {
@@ -343,9 +363,20 @@ export function createWorkspaceWindowLayer(
         });
         topZ.value = model.z.value;
 
+        const startNativeIds = new Set(
+            (options.startNativeViewIds || []).map((v) =>
+                normalizeMarkdownViewWindowId(String(v || ""))
+            )
+        );
+        const wantNative =
+            startNativeIds.has(id) ||
+            String((opts as ViewOptions & { native?: unknown })?.native || "") === "1" ||
+            String((opts as { params?: { native?: string } })?.params?.native || "") === "1";
+
         let disposeFrame: () => void = () => {};
         disposeFrame = mountUiWindow(workspace, model, body, () => elevateModel(model, id), {
             managedViewKey: id,
+            startNative: wantNative,
             onChromeChange: emitTasking,
             onClose: () => {
                 const m = managed.get(id);
@@ -356,6 +387,10 @@ export function createWorkspaceWindowLayer(
                 emitTasking();
             }
         });
+        if (wantNative) {
+            model.nativeMode.value = true;
+            exitNativeExcept(id);
+        }
 
         const rec: ManagedWindow = { key: id, model, disposeFrame, disposeView: undefined };
         managed.set(id, rec);
@@ -412,8 +447,34 @@ export function createWorkspaceWindowLayer(
     };
 
     const blurWindows = (): void => {
+        // WHY: Home / launcher — exit native mono so env chrome returns.
+        exitNativeExcept(null);
         focusedKey = null;
         clearFocusedAttrs();
+        emitTasking();
+    };
+
+    const enterNative = (viewId: string): boolean => {
+        const id = normalizeMarkdownViewWindowId(String(viewId || ""));
+        const m = managed.get(id);
+        if (!m || !findKeyedFrame(workspace, id)) return false;
+        exitNativeExcept(id);
+        m.model.nativeMode.value = true;
+        m.model.minimized.value = false;
+        m.model.visible.value = true;
+        elevateModel(m.model, id);
+        return true;
+    };
+
+    const exitNative = (viewId?: string): void => {
+        if (viewId) {
+            const id = normalizeMarkdownViewWindowId(String(viewId || ""));
+            const m = managed.get(id);
+            if (m?.model.nativeMode) m.model.nativeMode.value = false;
+            emitTasking();
+            return;
+        }
+        exitNativeExcept(null);
         emitTasking();
     };
 
@@ -422,6 +483,8 @@ export function createWorkspaceWindowLayer(
         dispose,
         focusWindow,
         blurWindows,
+        enterNative,
+        exitNative,
         listWindowTasks,
         getFocusedKey: () => focusedKey
     };

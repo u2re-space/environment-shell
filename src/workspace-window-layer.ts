@@ -1,8 +1,8 @@
 /*
  * Filename: workspace-window-layer.ts
  * FullPath: modules/shells/environment-shell/src/workspace-window-layer.ts
- * Change date and time: 09.55.00_29.07.2026
- * Reason for changes: nativeMode promote/restore; Home exits native; mono startNative.
+ * Change date and time: 13.05.00_29.07.2026
+ * Reason for changes: closeAllWindows for mobile Home (replaces title Close).
  */
 /**
  * WHY: Home (`mountViewModule` into workspace) stays under floating `ui-window`
@@ -165,6 +165,8 @@ export type WorkspaceWindowLayer = {
     focusWindow: (viewId: string) => boolean;
     /** Clear window focus markers (e.g. when Home task is selected). */
     blurWindows: () => void;
+    /** Dispose all managed windows (mobile Home / leave view). */
+    closeAllWindows: () => void;
     /** Promote a managed window to `native-mode` (mono/task). */
     enterNative: (viewId: string) => boolean;
     /** Exit native on one view or all. */
@@ -258,11 +260,14 @@ export function createWorkspaceWindowLayer(
         options.overlayMountHost ? getOrCreateEnvironmentOverlayMount(options.overlayMountHost) : null;
 
     shellContext.resolveOverlayMountPoint = (anchor) => {
+        // WHY: Prefer light-DOM `.env-shell-overlays` (document CSS + z > chrome). Shadow
+        // `[data-shell-overlays]` swallows document stylesheets so menus lose position/z-index
+        // and paint under the taskbar / mobile nav.
+        if (envOverlayMount) return envOverlayMount;
         if (options.environmentShellHost) {
             const fromShell = resolveShellOverlaysMount(options.environmentShellHost);
             if (fromShell) return fromShell;
         }
-        if (envOverlayMount) return envOverlayMount;
         return resolveGlobalOverlay(anchor ?? null);
     };
 
@@ -308,9 +313,16 @@ export function createWorkspaceWindowLayer(
             managedViewKey: key,
             onChromeChange: emitTasking,
             onClose: () => {
-                managed.get(key)?.disposeFrame();
+                // WHY: delete first so disposeFrame re-entry cannot dispose twice.
+                const m = managed.get(key);
+                if (!m) return;
                 managed.delete(key);
                 if (focusedKey === key) focusedKey = null;
+                try {
+                    m.disposeFrame();
+                } catch {
+                    /* already detached */
+                }
                 emitTasking();
             }
         });
@@ -379,11 +391,21 @@ export function createWorkspaceWindowLayer(
             startNative: wantNative,
             onChromeChange: emitTasking,
             onClose: () => {
+                // WHY: delete first so disposeFrame re-entry cannot dispose twice.
                 const m = managed.get(id);
-                m?.disposeView?.();
-                m?.disposeFrame();
+                if (!m) return;
                 managed.delete(id);
                 if (focusedKey === id) focusedKey = null;
+                try {
+                    m.disposeView?.();
+                } catch {
+                    /* view unmount optional */
+                }
+                try {
+                    m.disposeFrame();
+                } catch {
+                    /* already detached */
+                }
                 emitTasking();
             }
         });
@@ -454,6 +476,30 @@ export function createWorkspaceWindowLayer(
         emitTasking();
     };
 
+    /**
+     * WHY: Mobile Home replaces title Close — dispose all floating views so the
+     * launcher is visible again under always-maximized windows.
+     */
+    const closeAllWindows = (): void => {
+        if (disposed) return;
+        exitNativeExcept(null);
+        for (const m of [...managed.values()]) {
+            try {
+                m.disposeView?.();
+            } catch {
+                /* optional */
+            }
+            try {
+                m.disposeFrame();
+            } catch {
+                /* already detached */
+            }
+        }
+        managed.clear();
+        focusedKey = null;
+        emitTasking();
+    };
+
     const enterNative = (viewId: string): boolean => {
         const id = normalizeMarkdownViewWindowId(String(viewId || ""));
         const m = managed.get(id);
@@ -483,6 +529,7 @@ export function createWorkspaceWindowLayer(
         dispose,
         focusWindow,
         blurWindows,
+        closeAllWindows,
         enterNative,
         exitNative,
         listWindowTasks,

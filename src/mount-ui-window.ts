@@ -1,8 +1,8 @@
 /*
  * Filename: mount-ui-window.ts
  * FullPath: modules/shells/environment-shell/src/mount-ui-window.ts
- * Change date and time: 09.55.00_29.07.2026
- * Reason for changes: nativeMode — full-bleed ui-window + hide env chrome while active.
+ * Change date and time: 13.22.00_29.07.2026
+ * Reason for changes: Shell-side shadow chrome bind (dual-path) so max/min/close cannot go dead.
  */
 /**
  * WHY: Replaces `.wf-frame` / {@link mountWindowFrame} for environment-shell floating views.
@@ -141,10 +141,17 @@ export function mountUiWindow(
         const zNow = (z.value ?? 10) + zBoost;
         win.style.zIndex = String(zNow);
 
+        // WHY: phone/tablet shell — always mobile-max (no floating/min chrome).
+        if (mqMobile) {
+            if (!maximizedMobile.value) maximizedMobile.value = true;
+            if (minimized.value) minimized.value = false;
+            if (desktopMaximized.value) desktopMaximized.value = false;
+        }
+
         const isNative = Boolean(nativeMode.value);
-        const isMin = Boolean(minimized.value);
+        const isMin = !mqMobile && Boolean(minimized.value);
         const isDeskMax = !mqMobile && Boolean(desktopMaximized.value) && !isNative;
-        const isMobMax = mqMobile && Boolean(maximizedMobile.value) && !isNative;
+        const isMobMax = mqMobile && !isNative;
 
         win.toggleAttribute("native-mode", isNative);
         win.toggleAttribute("minimized", isMin);
@@ -174,9 +181,10 @@ export function mountUiWindow(
             win.style.left = "0";
             win.style.top = "0";
             win.style.right = "0";
-            win.style.bottom = "0";
+            // WHY: leave room for mobile Home dock (see `--env-mobile-dock-reserve`).
+            win.style.bottom = "var(--env-mobile-dock-reserve, 3.25rem)";
             win.style.width = "100%";
-            win.style.height = "100%";
+            win.style.height = "auto";
             syncEnvNativeTaskAttr(host);
             return;
         }
@@ -275,10 +283,12 @@ export function mountUiWindow(
     };
 
     const onWinMinimize = (): void => {
+        // WHY: mobile has no minimize — Home on the mobile taskbar leaves the view.
+        if (isMobileMq.matches) return;
         if (nativeMode.value) {
             nativeMode.value = false;
         }
-        if (desktopMaximized.value && !isMobileMq.matches) {
+        if (desktopMaximized.value) {
             desktopMaximized.value = false;
             if (savedDesktop) {
                 bounds.x.value = savedDesktop.x;
@@ -300,11 +310,7 @@ export function mountUiWindow(
             return;
         }
         if (isMobileMq.matches) {
-            // Phone: second maximize from mobile-max promotes to native mono.
-            if (maximizedMobile.value) {
-                onWinNative();
-                return;
-            }
+            // WHY: mobile windows stay maximized; no promote-to-native via chrome.
             minimized.value = false;
             maximizedMobile.value = true;
             applyChrome();
@@ -312,9 +318,11 @@ export function mountUiWindow(
             return;
         }
         if (minimized.value) minimized.value = false;
-        // Desktop: maximize once → desk max; again → native-mode (WCO / full-bleed).
+        // Desktop: maximize once → desk max. Second maximize intent restores (title chrome
+        // emits window-restore when already max). Accidental window-maximize while desk-max
+        // also restores — native full-bleed is via explicit window-native / dblclick paths.
         if (desktopMaximized.value) {
-            onWinNative();
+            onWinRestore();
             return;
         }
         savedDesktop = {
@@ -391,41 +399,55 @@ export function mountUiWindow(
         notifyChrome();
     };
 
+    // WHY: onClose → disposeFrame re-enters this cleanup; guard so close/max never double-fires teardown.
+    let closing = false;
+    let disposed = false;
+
     const onWinClose = (ev: Event): void => {
+        // WHY: preventDefault = "shell owns managed map"; Windows2 still removes the node.
         ev.preventDefault();
-        if (nativeMode.value) nativeMode.value = false;
-        visible.value = false;
-        options.onClose?.();
-        syncEnvNativeTaskAttr(host);
+        if (closing || disposed) return;
+        closing = true;
+        try {
+            if (nativeMode.value) nativeMode.value = false;
+            visible.value = false;
+            options.onClose?.();
+        } catch (err) {
+            console.error("[mount-ui-window] onClose failed", err);
+        } finally {
+            // Guarantee DOM teardown even if onClose/disposeFrame threw or no-oped.
+            if (!disposed) {
+                disposed = true;
+                stopFx?.();
+                isMobileMq.removeEventListener("change", onMq);
+                try {
+                    if (win.isConnected) win.remove();
+                } catch {
+                    /* already detached */
+                }
+            }
+            syncEnvNativeTaskAttr(host);
+        }
     };
 
     /**
-     * WHY: Bubble-phase fallback only. Windows2 handles controls in shadow capture and
-     * stopImmediatePropagation — if that wiring misses, composed click still reaches host.
-     * Do NOT use capture here or max/min will double-toggle.
+     * WHY: Dual-path chrome. Windows2 owns primary handlers; shell also stamps shadow
+     * button properties and keeps a host bubble fallback so desk max/min/close cannot die
+     * when lure replaces shadow nodes or click synthesis fails.
      */
-    const hitTitleControl = (
-        ev: Event
-    ): "minimize" | "maximize" | "close" | "exit-native" | null => {
-        const path = typeof ev.composedPath === "function" ? ev.composedPath() : [];
-        for (const n of path) {
-            if (!(n instanceof Element)) continue;
-            if (n.matches?.(".title-close")) return "close";
-            if (n.matches?.(".title-exit-native")) return "exit-native";
-            if (n.matches?.(".title-maximize")) return "maximize";
-            if (n.matches?.(".title-minimize")) return "minimize";
-        }
-        return null;
+    let lastShellChromeAt = 0;
+    const consumeShellChrome = (): boolean => {
+        const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+        if (now - lastShellChromeAt < 280) return false;
+        lastShellChromeAt = now;
+        return true;
     };
 
-    const onHostControlBubble = (ev: Event): void => {
-        if ((ev as Event & { defaultPrevented?: boolean }).defaultPrevented) return;
-        const which = hitTitleControl(ev);
-        if (!which) return;
-        ev.preventDefault();
-        ev.stopPropagation();
+    const runShellChrome = (which: "minimize" | "maximize" | "close" | "exit-native"): void => {
+        if (closing || disposed) return;
+        if (!consumeShellChrome()) return;
         if (which === "close") {
-            onWinClose(ev);
+            onWinClose(new Event("window-close", { cancelable: true }));
             return;
         }
         if (which === "exit-native") {
@@ -441,6 +463,85 @@ export function mountUiWindow(
         else onWinMinimize();
     };
 
+    const hitTitleControl = (
+        ev: Event
+    ): "minimize" | "maximize" | "close" | "exit-native" | null => {
+        const path = typeof ev.composedPath === "function" ? ev.composedPath() : [];
+        for (const n of path) {
+            if (!(n instanceof Element)) continue;
+            const action = n.getAttribute?.("data-ui-win-action");
+            if (action === "close" || action === "exit-native" || action === "maximize" || action === "minimize") {
+                return action;
+            }
+            if (n.matches?.(".title-close")) return "close";
+            if (n.matches?.(".title-exit-native")) return "exit-native";
+            if (n.matches?.(".title-maximize")) return "maximize";
+            if (n.matches?.(".title-minimize")) return "minimize";
+        }
+        return null;
+    };
+
+    const onHostControlBubble = (ev: Event): void => {
+        if (closing || disposed) return;
+        // WHY: Windows2 may preventDefault after handling — skip duplicate only then.
+        if ((ev as Event & { defaultPrevented?: boolean }).defaultPrevented) return;
+        const which = hitTitleControl(ev);
+        if (!which) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        runShellChrome(which);
+    };
+
+    /** Nuclear path: bind live shadow buttons from the shell (open shadow). */
+    let chromeMo: MutationObserver | null = null;
+    const stampShellButtonHandlers = (): void => {
+        const root = win.shadowRoot;
+        if (!root || closing || disposed) return;
+        const nodes = root.querySelectorAll<HTMLButtonElement>("[data-ui-win-action], .title-minimize, .title-maximize, .title-close, .title-exit-native");
+        for (const btn of nodes) {
+            let which = btn.getAttribute("data-ui-win-action") as
+                | "minimize"
+                | "maximize"
+                | "close"
+                | "exit-native"
+                | null;
+            if (!which) {
+                if (btn.classList.contains("title-close")) which = "close";
+                else if (btn.classList.contains("title-exit-native")) which = "exit-native";
+                else if (btn.classList.contains("title-maximize")) which = "maximize";
+                else if (btn.classList.contains("title-minimize")) which = "minimize";
+            }
+            if (!which) continue;
+            btn.setAttribute("data-ui-win-action", which);
+            const action = which;
+            // Mark so we can detect re-created nodes (property identity changes with the node).
+            const run = (ev: Event): void => {
+                // If Windows2 already consumed this gesture, defaultPrevented is set.
+                if ((ev as Event & { defaultPrevented?: boolean }).defaultPrevented) return;
+                ev.preventDefault();
+                ev.stopPropagation();
+                runShellChrome(action);
+            };
+            btn.onclick = run;
+            btn.onpointerup = (ev: PointerEvent) => {
+                if (ev.button !== 0) return;
+                run(ev);
+            };
+        }
+    };
+
+    stampShellButtonHandlers();
+    queueMicrotask(stampShellButtonHandlers);
+    requestAnimationFrame(stampShellButtonHandlers);
+    if (typeof MutationObserver !== "undefined") {
+        chromeMo = new MutationObserver(() => stampShellButtonHandlers());
+        const observeRoot = (): void => {
+            if (win.shadowRoot) chromeMo?.observe(win.shadowRoot, { childList: true, subtree: true });
+            else requestAnimationFrame(observeRoot);
+        };
+        observeRoot();
+    }
+
     win.addEventListener("window-focus", onWinFocus);
     win.addEventListener("window-move", onWinMove);
     win.addEventListener("window-resize", onWinResize);
@@ -451,9 +552,15 @@ export function mountUiWindow(
     win.addEventListener("window-exit-native", onWinExitNative);
     win.addEventListener("window-close", onWinClose);
     win.addEventListener("click", onHostControlBubble);
+    win.addEventListener("pointerup", onHostControlBubble);
 
     return () => {
+        if (disposed) return;
+        disposed = true;
+        closing = true;
         stopFx?.();
+        chromeMo?.disconnect();
+        chromeMo = null;
         isMobileMq.removeEventListener("change", onMq);
         win.removeEventListener("window-focus", onWinFocus);
         win.removeEventListener("window-move", onWinMove);
@@ -465,9 +572,10 @@ export function mountUiWindow(
         win.removeEventListener("window-exit-native", onWinExitNative);
         win.removeEventListener("window-close", onWinClose);
         win.removeEventListener("click", onHostControlBubble);
+        win.removeEventListener("pointerup", onHostControlBubble);
         try {
             if (nativeMode.value) nativeMode.value = false;
-            win.remove();
+            if (win.isConnected) win.remove();
         } catch {
             /* already detached */
         }

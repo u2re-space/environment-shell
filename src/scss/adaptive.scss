@@ -1,6 +1,10 @@
 @use "lib/variables" as v;
 
-/* Device tray: one host in taskbar (desktop) vs footer (mobile). */
+/*
+ * Device tray placement:
+ * - Desktop: tray lives in the Win10 taskbar; hide the statusbar footer copy.
+ * - Mobile: no Wi‑Fi/battery in the Home dock (OS status bar covers that).
+ */
 
 @media (min-width: v.$bp-desktop-min) {
     .env-device-tray--footer {
@@ -8,8 +12,12 @@
     }
 }
 
-@media (max-width: v.$bp-mobile-max) {
-    .env-device-tray--taskbar {
-        display: none !important;
-    }
+.env-shell-chrome[data-desktop] .env-device-tray--footer {
+    display: none !important;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar__tray-host,
+.env-shell-chrome:not([data-desktop]) .env-device-tray--taskbar,
+.env-shell-chrome:not([data-desktop]) .env-device-tray--footer {
+    display: none !important;
 }

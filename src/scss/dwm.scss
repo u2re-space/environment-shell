@@ -48,6 +48,8 @@
 /* WHY: ui-window content slot must fill chrome body for mounted CWSP views. */
 .env-shell-workspace ui-window.env-ui-window {
     --env-window-z-boost: var(--env-window-z-boost, 0);
+    /* WHY: stay above home launcher hit-testing; chrome/title drag needs auto. */
+    pointer-events: auto;
 }
 
 /* DWM maximize: fill workspace with inset (inline geometry also set in mount-ui-window). */
@@ -84,21 +86,27 @@
 }
 
 /*
- * WHY: `.wf-frame-body` may use `transform: translateZ(0)` (containing block for embedded views).
- * Without an explicit stack order, composited body content can paint above the titlebar and swallow pointer events.
+ * WHY: `.wf-frame-body` / ui-window content may composite above the title row and swallow
+ * pointer events (settings drag + chrome clicks). Keep chrome above the body.
  */
-.env-shell-workspace .wf-frame .wf-titlebar {
+.env-shell-workspace .wf-frame .wf-titlebar,
+.env-shell-workspace ui-window.env-ui-window::part(title-handler) {
     position: relative;
-    z-index: 3;
+    z-index: 50;
     pointer-events: auto;
 }
 
-.env-shell-workspace .wf-frame .wf-frame-body {
+.env-shell-workspace .wf-frame .wf-frame-body,
+.env-shell-workspace ui-window.env-ui-window::part(content-handler) {
     position: relative;
     z-index: 0;
+    /* Mirror Windows2: trap fixed/absolute slotted paint inside the body. */
+    transform: translateZ(0);
+    contain: paint;
 }
 
-.env-shell-workspace .wf-frame .wf-resize {
+.env-shell-workspace .wf-frame .wf-resize,
+.env-shell-workspace ui-window.env-ui-window::part(resizer) {
     z-index: 4;
     pointer-events: auto;
 }

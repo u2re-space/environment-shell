@@ -48,11 +48,17 @@
     /* Added to `mountWindowFrame` z-index so `.wf-frame` stacks above the home layer. */
     --env-window-z-boost: 400;
 
-    /* Optional: home-view reads this for bottom padding above fixed `.env-shell-chrome` (defaults exist in SpeedDial.scss). */
-    --env-shell-chrome-stack-reserve: 5.25rem;
+    /*
+     * WHY: Mobile chrome is a short Home nav (~3rem), not the tall desktop taskbar.
+     * Home padding and ui-window bottom inset must share the same reserve or the grid
+     * sits in a dead band and icons look “stuck” / nav appears missing.
+     */
+    --env-mobile-dock-reserve: calc(3rem + env(safe-area-inset-bottom, 0px));
+    --env-shell-chrome-stack-reserve: var(--env-mobile-dock-reserve);
 
     @media (min-width: v.$bp-desktop-min) {
         --env-shell-chrome-stack-reserve: 7.5rem;
+        --env-mobile-dock-reserve: 0px;
     }
 }
 
@@ -61,6 +67,19 @@
     inset: 0;
     z-index: 0;
     pointer-events: none;
+}
+
+/*
+ * WHY: Speed-dial / explorer context menus mount here; must beat `.env-shell-chrome`
+ * (taskbar + mobile Home nav) which uses `$z-shell-chrome`.
+ */
+.env-shell-overlays,
+[data-env-shell-overlays] {
+    position: absolute;
+    inset: 0;
+    z-index: v.$z-shell-overlays;
+    pointer-events: none;
+    box-sizing: border-box;
 }
 
 .env-shell-workspace {

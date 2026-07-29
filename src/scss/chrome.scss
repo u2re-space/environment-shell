@@ -1,6 +1,12 @@
+/*
+ * Filename: chrome.scss
+ * FullPath: modules/shells/environment-shell/src/scss/chrome.scss
+ * Change date and time: 13.15.00_29.07.2026
+ * Reason for changes: Mobile nav bar — icon Home + long-press process switcher.
+ */
 @use "lib/variables" as v;
 
-/* Fixed chrome: taskbar (desktop) + FL-UI `ui-statusbar`. */
+/* Fixed chrome: taskbar (desktop + mobile dock) + FL-UI `ui-statusbar` (desktop meta). */
 
 .env-shell-chrome {
     position: fixed;
@@ -20,37 +26,34 @@
     pointer-events: auto;
 }
 
+/*
+ * Taskbar base (desktop Win10 + mobile dock share the same host).
+ */
 .env-shell-taskbar {
     order: 0;
-    /* WHY: Hidden on phone; shown via media OR `[data-desktop]` (JS mq — adopted-sheet media can miss). */
-    display: none;
+    display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.35rem 0.65rem 0.25rem;
-    background: color-mix(in oklch, oklch(0.16 0.02 280) 88%, transparent);
-    border-block-start: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
-    backdrop-filter: blur(10px);
-    color: var(--wf-md-on-surface, oklch(0.93 0.02 274));
-}
-
-@media (min-width: v.$bp-desktop-min) {
-    .env-shell-taskbar {
-        display: flex;
-    }
-}
-
-.env-shell-chrome[data-desktop] .env-shell-taskbar {
-    display: flex;
+    align-items: stretch;
+    gap: 0.15rem;
+    block-size: 2.5rem;
+    min-block-size: 2.5rem;
+    padding: 0 0.25rem;
+    padding-block-end: env(safe-area-inset-bottom, 0);
+    background: #1a1a1a;
+    border-block-start: 1px solid #2b2b2b;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: #f3f3f3;
+    box-shadow: none;
 }
 
 .env-shell-taskbar::part(taskbar) {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
-    gap: 0.45rem;
+    align-items: stretch;
+    gap: 0.15rem;
     flex: 1;
     min-inline-size: 0;
     inline-size: 100%;
@@ -61,13 +64,18 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
-    gap: 0.3rem;
+    align-items: stretch;
+    gap: 0;
     min-inline-size: 0;
+}
+
+.env-shell-taskbar__pins {
+    flex: 0 0 auto;
 }
 
 .env-shell-taskbar__windows {
     flex: 1 1 auto;
+    justify-content: flex-start;
     overflow-x: auto;
     scrollbar-width: thin;
 }
@@ -75,21 +83,35 @@
 .env-shell-taskbar ui-task {
     cursor: pointer;
     color: inherit;
-    background: color-mix(in oklch, var(--wf-md-on-surface, white) 8%, transparent);
-    border: 1px solid var(--wf-md-outline-variant, color-mix(in oklch, white 10%, transparent));
+    align-self: stretch;
+    min-inline-size: 2.75rem;
+    min-block-size: 100%;
+    padding-inline: 0.55rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    outline: none;
+    opacity: 1;
+    /* Active underline via inset shadow so we don't fight ui-task border tokens. */
+    box-shadow: inset 0 -2px 0 transparent;
+}
+
+.env-shell-taskbar ui-task:hover {
+    background: #2a2a2a;
+    opacity: 1;
 }
 
 .env-shell-taskbar ui-task[data-env-active="true"],
 .env-shell-taskbar ui-task[data-active],
 .env-shell-taskbar ui-task[data-focus] {
-    outline: 2px solid color-mix(in oklch, var(--wf-md-primary, oklch(0.74 0.14 294)) 55%, transparent);
-    outline-offset: 2px;
+    outline: none;
     opacity: 1;
-    background: color-mix(in oklch, var(--wf-md-primary, oklch(0.74 0.14 294)) 18%, transparent);
+    background: #333333;
+    box-shadow: inset 0 -2px 0 #60cdff;
 }
 
 .env-shell-taskbar ui-task[data-minimized] {
-    opacity: 0.55;
+    opacity: 0.65;
 }
 
 .env-shell-taskbar__tray-host {
@@ -97,6 +119,159 @@
     display: flex;
     align-items: center;
     flex: 0 0 auto;
+    padding-inline: 0.35rem;
+    border-inline-start: 1px solid #2b2b2b;
+}
+
+/*
+ * Mobile nav bar: thin bar, centered house icon only.
+ * Long-press Home → `.env-shell-navbar__switcher` (open processes).
+ */
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    block-size: 3rem;
+    min-block-size: 3rem;
+    padding: 0.15rem 0.75rem;
+    padding-block-end: calc(0.15rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in oklch, #121212 92%, transparent);
+    border-block-start: 1px solid color-mix(in oklch, #fff 10%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar__pins {
+    flex: 0 0 auto;
+    justify-content: center;
+    align-items: center;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar__pins ui-task:not([data-env-home]) {
+    display: none !important;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar__windows {
+    display: none !important;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar__tray-host {
+    display: none !important;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home] {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Icon-only Home (hide task title label). */
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home]::part(title) {
+    display: none !important;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home]::part(icon) {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home]:hover,
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home]:active {
+    background: color-mix(in oklch, #fff 10%, transparent);
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home][data-env-active="true"],
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home][data-active],
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar ui-task[data-env-home][data-focus] {
+    background: color-mix(in oklch, #fff 8%, transparent);
+    box-shadow: inset 0 -2px 0 #60cdff;
+}
+
+/* Long-press process switcher sheet above the nav bar. */
+.env-shell-navbar__switcher {
+    position: absolute;
+    inset-inline: 0.75rem;
+    inset-block-end: calc(100% + 0.4rem);
+    z-index: 5;
+    max-block-size: min(50dvb, 20rem);
+    overflow: auto;
+    padding: 0.35rem;
+    border-radius: 0.85rem;
+    background: color-mix(in oklch, #1c1c1e 96%, transparent);
+    border: 1px solid color-mix(in oklch, #fff 12%, transparent);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: #f2f2f7;
+}
+
+.env-shell-navbar__switcher[hidden] {
+    display: none !important;
+}
+
+.env-shell-navbar__switcher-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.env-shell-navbar__switcher-empty {
+    padding: 0.75rem 0.85rem;
+    font: 400 0.8125rem/1.3 system-ui, sans-serif;
+    opacity: 0.72;
+    text-align: center;
+}
+
+.env-shell-navbar__switcher-item {
+    appearance: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: inherit;
+    font: 500 0.875rem/1.25 system-ui, sans-serif;
+    text-align: start;
+    cursor: pointer;
+}
+
+.env-shell-navbar__switcher-item:hover,
+.env-shell-navbar__switcher-item:focus-visible {
+    outline: none;
+    background: color-mix(in oklch, #fff 10%, transparent);
+}
+
+.env-shell-navbar__switcher-item[data-active] {
+    background: color-mix(in oklch, #60cdff 18%, transparent);
+}
+
+.env-shell-navbar__switcher-item ui-icon {
+    flex: 0 0 auto;
+    --icon-size: 1.25rem;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+}
+
+/* Mobile: statusbar meta is redundant — nav owns Home. */
+.env-shell-chrome:not([data-desktop]) .env-ui-statusbar {
+    display: none !important;
 }
 
 .env-ui-statusbar {
@@ -153,14 +328,12 @@
 }
 
 /*
- * WHY: While a managed ui-window is in native-mode, hide env taskbar/statusbar so the
- * mono task owns the full surface (WCO / standalone stretch).
+ * WHY: Desktop native-mode (WCO) hides env chrome. On mobile the Home dock must stay —
+ * it is the only leave-view control (no title Close).
  */
-.env-shell-root[data-env-native-task],
-env-shell-container[data-env-native-task] {
-    .env-shell-chrome {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
+.env-shell-root[data-env-native-task] .env-shell-chrome[data-desktop],
+env-shell-container[data-env-native-task] .env-shell-chrome[data-desktop] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }

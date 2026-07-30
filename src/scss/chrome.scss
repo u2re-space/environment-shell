@@ -1,8 +1,8 @@
 /*
  * Filename: chrome.scss
  * FullPath: modules/shells/environment-shell/src/scss/chrome.scss
- * Change date and time: 13.15.00_29.07.2026
- * Reason for changes: Mobile nav bar — icon Home + long-press process switcher.
+ * Change date and time: 17.46.00_30.07.2026
+ * Reason for changes: Acrylic desktop taskbar; transparent mobile; icon-only desktop tasks; clock.
  */
 @use "lib/variables" as v;
 
@@ -27,10 +27,12 @@
 }
 
 /*
- * Taskbar base (desktop Win10 + mobile dock share the same host).
+ * Taskbar base (desktop Win10 acrylic + mobile transparent dock share the same host).
+ * Soft elevation: `.env-shell-taskbar-under` (UnderlyingShadow) — not box-shadow on blur host.
  */
 .env-shell-taskbar {
     order: 0;
+    position: relative;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -40,12 +42,24 @@
     min-block-size: 2.5rem;
     padding: 0 0.25rem;
     padding-block-end: env(safe-area-inset-bottom, 0);
-    background: #1a1a1a;
-    border-block-start: 1px solid #2b2b2b;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    background: color-mix(in oklab, #1a1a1a 72%, transparent);
+    border-block-start: 1px solid color-mix(in oklab, #fff 12%, transparent);
+    backdrop-filter: blur(22px) saturate(1.35);
+    -webkit-backdrop-filter: blur(22px) saturate(1.35);
     color: #f3f3f3;
     box-shadow: none;
+}
+
+.env-shell-taskbar-under.underlying-shadow-container,
+.env-shell-taskbar-under {
+    pointer-events: none !important;
+    overflow: visible !important;
+    z-index: -1 !important;
+}
+
+.env-shell-taskbar-under .underlying-shadow-geometry {
+    background: transparent !important;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.4) !important;
 }
 
 .env-shell-taskbar::part(taskbar) {
@@ -97,7 +111,7 @@
 }
 
 .env-shell-taskbar ui-task:hover {
-    background: #2a2a2a;
+    background: color-mix(in oklab, #fff 10%, transparent);
     opacity: 1;
 }
 
@@ -106,7 +120,7 @@
 .env-shell-taskbar ui-task[data-focus] {
     outline: none;
     opacity: 1;
-    background: #333333;
+    background: color-mix(in oklab, #fff 14%, transparent);
     box-shadow: inset 0 -2px 0 #60cdff;
 }
 
@@ -119,12 +133,69 @@
     display: flex;
     align-items: center;
     flex: 0 0 auto;
+    gap: 0.35rem;
     padding-inline: 0.35rem;
-    border-inline-start: 1px solid #2b2b2b;
+    border-inline-start: 1px solid color-mix(in oklab, #fff 12%, transparent);
+}
+
+.env-shell-taskbar__clock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.05rem;
+    min-inline-size: 4.5rem;
+    padding-inline: 0.35rem 0.15rem;
+    line-height: 1.05;
+    user-select: none;
+    pointer-events: none;
+}
+
+.env-shell-taskbar__clock-time {
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #f3f3f3;
+}
+
+.env-shell-taskbar__clock-date {
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: color-mix(in oklab, #f3f3f3 72%, transparent);
+    white-space: nowrap;
+}
+
+/* Desktop: icon-only tasks (tooltip via title / aria-label). */
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task::part(title) {
+    display: none !important;
+}
+
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task {
+    min-inline-size: 2.5rem;
+    padding-inline: 0.45rem;
+}
+
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task::part(icon) {
+    inline-size: 1.35rem;
+    block-size: 1.35rem;
+}
+
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task::part(glyph) {
+    inline-size: 1.35rem;
+    block-size: 1.35rem;
+}
+
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task::part(letter) {
+    font-size: 0.8rem;
+}
+
+/* Desktop: Home pin is redundant (empty bar / menu → Show desktop). */
+.env-shell-chrome[data-desktop] .env-shell-taskbar ui-task[data-env-home] {
+    display: none !important;
 }
 
 /*
- * Mobile nav bar: thin bar, centered house icon only.
+ * Mobile nav bar: fully transparent; centered house icon only.
  * Long-press Home → `.env-shell-navbar__switcher` (open processes).
  */
 .env-shell-chrome:not([data-desktop]) .env-shell-taskbar {
@@ -138,10 +209,15 @@
     min-block-size: 3rem;
     padding: 0.15rem 0.75rem;
     padding-block-end: calc(0.15rem + env(safe-area-inset-bottom, 0px));
-    background: color-mix(in oklch, #121212 92%, transparent);
-    border-block-start: 1px solid color-mix(in oklch, #fff 10%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: transparent;
+    border-block-start: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+}
+
+.env-shell-chrome:not([data-desktop]) .env-shell-taskbar-under {
+    display: none !important;
 }
 
 .env-shell-chrome:not([data-desktop]) .env-shell-taskbar__pins {

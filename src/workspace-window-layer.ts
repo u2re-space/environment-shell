@@ -163,6 +163,10 @@ export type WorkspaceWindowLayer = {
     dispose: () => void;
     /** Bring keyed window to front if it exists. */
     focusWindow: (viewId: string) => boolean;
+    /** Minimize a managed window (desktop). */
+    minimizeWindow: (viewId: string) => boolean;
+    /** Close / dispose a managed window. */
+    closeWindow: (viewId: string) => boolean;
     /** Clear window focus markers (e.g. when Home task is selected). */
     blurWindows: () => void;
     /** Dispose all managed windows (mobile Home / leave view). */
@@ -468,6 +472,46 @@ export function createWorkspaceWindowLayer(
         return true;
     };
 
+    const minimizeWindow = (viewId: string): boolean => {
+        const id = normalizeMarkdownViewWindowId(String(viewId || ""));
+        const m = managed.get(id);
+        if (!m || !findKeyedFrame(workspace, id)) return false;
+        // WHY: mobile has no minimize — Home closes views instead.
+        if (typeof matchMedia === "function" && matchMedia("(max-width: 640px)").matches) {
+            return false;
+        }
+        if (m.model.nativeMode?.value) m.model.nativeMode.value = false;
+        if (m.model.desktopMaximized?.value) m.model.desktopMaximized.value = false;
+        m.model.visible.value = true;
+        m.model.minimized.value = true;
+        if (focusedKey === id) {
+            focusedKey = null;
+            clearFocusedAttrs();
+        }
+        emitTasking();
+        return true;
+    };
+
+    const closeWindow = (viewId: string): boolean => {
+        const id = normalizeMarkdownViewWindowId(String(viewId || ""));
+        const m = managed.get(id);
+        if (!m) return false;
+        managed.delete(id);
+        if (focusedKey === id) focusedKey = null;
+        try {
+            m.disposeView?.();
+        } catch {
+            /* optional */
+        }
+        try {
+            m.disposeFrame();
+        } catch {
+            /* already detached */
+        }
+        emitTasking();
+        return true;
+    };
+
     const blurWindows = (): void => {
         // WHY: Home / launcher — exit native mono so env chrome returns.
         exitNativeExcept(null);
@@ -528,6 +572,8 @@ export function createWorkspaceWindowLayer(
         shellContext,
         dispose,
         focusWindow,
+        minimizeWindow,
+        closeWindow,
         blurWindows,
         closeAllWindows,
         enterNative,

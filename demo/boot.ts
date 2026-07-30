@@ -151,6 +151,21 @@ const chromeResult = mountEnvironmentChrome(app, {
                 void viewWindows.shellContext.openView?.(viewId);
             }
             setFocusedTaskId?.(viewId);
+        },
+        onMinimizeWindow: (viewId) => {
+            navEcho.value = `task.minimize(${viewId})`;
+            if (viewWindows.minimizeWindow?.(viewId)) {
+                setFocusedTaskId?.("home");
+                focusedTaskId.value = "home";
+            }
+        },
+        onCloseWindow: (viewId) => {
+            navEcho.value = `task.close(${viewId})`;
+            viewWindows.closeWindow?.(viewId);
+            if (String(focusedTaskId.value || "") === String(viewId || "").toLowerCase()) {
+                setFocusedTaskId?.("home");
+                focusedTaskId.value = "home";
+            }
         }
     }
 });

@@ -233,6 +233,18 @@ export function createWorkspaceWindowLayer(
     };
 
     const elevateModel = (model: WindowChromeModel, key: string): void => {
+        /*
+         * WHY: `Windows2` dispatches `window-focus` on every `pointerdown` inside the window.
+         * Without this guard, each click in settings/explorer re-runs `clearFocusedAttrs()`
+         * (strips `data-focused` from all windows), `workspace.appendChild(frame)` (DOM move →
+         * reflow), and the `applyChrome` effect (z-increment + setVisible). The resulting
+         * reflow storm looks like a "reload" and can swallow the very click that triggered it.
+         * Skip when already focused + not minimized + already last child (top of paint order).
+         */
+        if (focusedKey === key && !model.minimized.value) {
+            const frame = findKeyedFrame(workspace, key);
+            if (frame && frame === workspace.lastElementChild) return;
+        }
         topZ.value += 1;
         model.z.value = topZ.value;
         model.minimized.value = false;

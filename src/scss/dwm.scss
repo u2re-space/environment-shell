@@ -71,6 +71,12 @@
     overflow: hidden;
     margin: 0;
     padding: 0;
+    /*
+     * WHY: ui-window host can carry inline `pointer-events: none` (setVisible) or inherit it
+     * from a constructed sheet; the view-host chain must stay hit-targetable so settings tabs,
+     * explorer rows, etc. remain clickable when embedded.
+     */
+    pointer-events: auto;
 }
 
 /* Home launcher fills workspace under floating windows. */

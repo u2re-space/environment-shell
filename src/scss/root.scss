@@ -1,3 +1,10 @@
+/*
+ * Filename: root.scss
+ * FullPath: modules/shells/environment-shell/src/scss/root.scss
+ * Change date and time: 16.30.00_31.07.2026
+ * Reason for changes: Light --wf-md-* via --u2-color-mod; keep --color-* bridge.
+ */
+
 /* WHY: Layer wallpaper under workspace; wf-demo scrim must not paint over canvas. */
 
 @use "lib/variables" as v;
@@ -22,24 +29,26 @@
     --env-status-fg-muted: rgba(245, 245, 247, 0.78);
 
     /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
-    --color-surface: var(--wf-md-surface, oklch(0.16 0.02 280));
-    --color-on-surface: var(--wf-md-on-surface, oklch(0.93 0.02 274));
-    --color-on-surface-variant: var(--wf-md-on-surface-variant, oklch(0.78 0.03 274));
-    --color-surface-container: var(--wf-md-surf-container, oklch(0.22 0.03 276));
-    --color-surface-container-high: var(--wf-md-surf-container-high, oklch(0.26 0.035 274));
-    --color-outline-variant: var(--wf-md-outline-variant, oklch(1 0.02 280 / 12%));
-    --on-surface-color: var(--wf-md-on-surface, oklch(0.93 0.02 274));
-    --on-surface-variant: var(--wf-md-on-surface-variant, oklch(0.78 0.03 274));
+    /* WHY: WallpaperTheme writes --color-primary; teal fallback matches stock nebula, not purple. */
+    --wf-md-seed: var(--color-primary, #00a3ad);
+    --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 940));
+    --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100));
+    --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 280));
+    --color-surface-container: var(--wf-md-surf-container, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 860));
+    --color-surface-container-high: var(--wf-md-surf-container-high, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 820));
+    --color-outline-variant: var(--wf-md-outline-variant, color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100) 12%, transparent));
+    --on-surface-color: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100));
+    --on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 280));
 
     @media (prefers-color-scheme: light) {
         /* WHY: wf-demo.css pins a dark baseline; flip Material-ish tokens so launcher icons/labels contrast on light tiles. */
-        --wf-md-surface: oklch(0.98 0.008 280);
-        --wf-md-surf-container-low: oklch(0.97 0.01 278);
-        --wf-md-surf-container: oklch(0.94 0.012 276);
-        --wf-md-surf-container-high: oklch(0.91 0.015 274);
-        --wf-md-outline-variant: oklch(0 0 0 / 14%);
-        --wf-md-on-surface: oklch(0.22 0.04 274);
-        --wf-md-on-surface-variant: oklch(0.45 0.04 274);
+        --wf-md-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 60);
+        --wf-md-surf-container-low: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100);
+        --wf-md-surf-container: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 160);
+        --wf-md-surf-container-high: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 220);
+        --wf-md-outline-variant: color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 900) 14%, transparent);
+        --wf-md-on-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 900);
+        --wf-md-on-surface-variant: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 700);
 
         --color-surface: var(--wf-md-surface);
         --color-on-surface: var(--wf-md-on-surface);

@@ -5,7 +5,7 @@
 import type { ShellContext } from "views/types";
 import { ref } from "fest/object";
 import "fest/icon";
-import { initializeAppCanvasLayer } from "fest/image";
+import { initializeAppCanvasLayer, restoreWallpaperThemeCache } from "fest/image";
 
 import "../../window-frame/public/demo/wf-demo.css";
 import "../src/scss/main.scss";
@@ -20,6 +20,8 @@ import {
 } from "../src/index";
 
 seedEnvironmentWallpaperIfUnset("/assets/stock.jpg");
+/* WHY: Paint chrome with last wallpaper seeds before canvas KMeans finishes. */
+restoreWallpaperThemeCache();
 defineEnvironmentShellContainer();
 
 const selectedPath = ref("/demo/sample.md");

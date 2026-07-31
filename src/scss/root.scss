@@ -29,8 +29,8 @@
     --env-status-fg-muted: rgba(245, 245, 247, 0.78);
 
     /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
-    /* WHY: WallpaperTheme writes --color-primary; teal fallback matches stock nebula, not purple. */
-    --wf-md-seed: var(--color-primary, #00a3ad);
+    /* WHY: WallpaperTheme may write --color-primary; box fallback = familiar veela blue. */
+    --wf-md-seed: var(--color-primary, #5a7fff);
     --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 940));
     --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100));
     --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 280));

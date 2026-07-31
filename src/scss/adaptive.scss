@@ -2,22 +2,27 @@
 
 /*
  * Device tray placement:
- * - Desktop: tray lives in the Win10 taskbar; hide the statusbar footer copy.
- * - Mobile: no Wi‑Fi/battery in the Home dock (OS status bar covers that).
+ * - Desktop footer: tray lives in the Win10 taskbar; hide the statusbar footer copy.
+ * - Mobile overlay statusbar: show footer tray (time L / icons R).
+ * - Mobile Home dock: no Wi‑Fi/battery (overlay status owns that when visible).
  */
 
 @media (min-width: v.$bp-desktop-min) {
-    .env-device-tray--footer {
+    .env-shell-chrome[data-desktop]:not([data-status-overlay]) .env-device-tray--footer {
         display: none !important;
     }
 }
 
-.env-shell-chrome[data-desktop] .env-device-tray--footer {
+.env-shell-chrome[data-desktop]:not([data-status-overlay]) .env-device-tray--footer {
     display: none !important;
 }
 
 .env-shell-chrome:not([data-desktop]) .env-shell-taskbar__tray-host,
-.env-shell-chrome:not([data-desktop]) .env-device-tray--taskbar,
-.env-shell-chrome:not([data-desktop]) .env-device-tray--footer {
+.env-shell-chrome:not([data-desktop]) .env-device-tray--taskbar {
+    display: none !important;
+}
+
+/* Without overlay (standalone), hide footer tray too. */
+.env-shell-chrome:not([data-desktop]):not([data-status-overlay]) .env-device-tray--footer {
     display: none !important;
 }

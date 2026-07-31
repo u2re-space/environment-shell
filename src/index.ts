@@ -7,7 +7,11 @@
 
 import {
     attachShellDeviceStatus,
+    attachStatusBarContrast,
+    isShellStandaloneDisplay,
+    matchShellDisplayMode,
     mountEnvironmentStatusBar,
+    shouldShowStatusOverlay,
     type EnvironmentShellStatusRefs,
     type ShellDeviceStatus
 } from "./components/statusbar/statusbar";
@@ -93,7 +97,11 @@ export function mountEnvironmentChrome(
     options: MountEnvironmentChromeOptions
 ): MountEnvironmentChromeResult {
     const device = attachShellDeviceStatus();
-    const { element: statusBar } = mountEnvironmentStatusBar(options.shell, options.introHtml, device);
+    const { element: statusBar, dispose: disposeStatusBar } = mountEnvironmentStatusBar(
+        options.shell,
+        options.introHtml,
+        device
+    );
     const root = document.createElement("div");
     root.className = "env-shell-chrome wf-chrome-no-select";
 
@@ -105,16 +113,67 @@ export function mountEnvironmentChrome(
         root.append(statusBar);
     }
 
-    // WHY: Drive taskbar visibility from JS mq as well as CSS media (desktop screens).
+    const shellRoot =
+        (host.classList?.contains("env-shell-root") ? host : null) ||
+        (host.closest?.(".env-shell-root") as HTMLElement | null) ||
+        (host.closest?.("env-shell-container") as HTMLElement | null) ||
+        host;
+
+    // WHY: Drive taskbar / status overlay from mq + display-mode + document fullscreen.
     const desktopMq =
         typeof matchMedia === "function" ? matchMedia("(min-width: 641px)") : null;
-    const syncDesktopAttr = (): void => {
+    const displayMqs =
+        typeof matchMedia === "function"
+            ? [
+                  "(display-mode: standalone)",
+                  "(display-mode: fullscreen)",
+                  "(display-mode: minimal-ui)",
+                  "(display-mode: browser)",
+                  "(display-mode: window-controls-overlay)"
+              ].map((q) => matchMedia(q))
+            : [];
+
+    const syncChromeSurface = (): void => {
         const desktop = desktopMq ? desktopMq.matches : true;
+        const displayMode = matchShellDisplayMode();
+        const standalone = isShellStandaloneDisplay();
+        const statusOverlay = shouldShowStatusOverlay({ desktop, standalone, displayMode });
+
         root.toggleAttribute("data-desktop", desktop);
+        root.toggleAttribute("data-standalone", standalone);
+        root.toggleAttribute("data-status-overlay", statusOverlay);
         root.dataset.chromeLayout = desktop ? "desktop" : "mobile";
+        root.dataset.displayMode = displayMode;
+
+        shellRoot.toggleAttribute("data-standalone", standalone);
+        shellRoot.toggleAttribute("data-status-overlay", statusOverlay);
+        shellRoot.dataset.displayMode = displayMode;
+        // INVARIANT: windows title spacer + overlay height share this token.
+        shellRoot.style.setProperty(
+            "--env-status-inset-top",
+            statusOverlay ? "max(2rem, env(safe-area-inset-top, 0px))" : "0px"
+        );
+        document.documentElement.toggleAttribute("data-env-status-overlay", statusOverlay);
+        document.documentElement.toggleAttribute("data-env-standalone", standalone);
+        // WHY: open ui-windows re-read gap / no-titlebar from these attrs.
+        try {
+            shellRoot.dispatchEvent(
+                new CustomEvent("env-chrome-surface", {
+                    bubbles: true,
+                    detail: { statusOverlay, standalone, displayMode, desktop }
+                })
+            );
+        } catch {
+            /* ignore */
+        }
     };
-    syncDesktopAttr();
-    desktopMq?.addEventListener?.("change", syncDesktopAttr);
+    syncChromeSurface();
+    desktopMq?.addEventListener?.("change", syncChromeSurface);
+    for (const mq of displayMqs) mq.addEventListener?.("change", syncChromeSurface);
+    document.addEventListener("fullscreenchange", syncChromeSurface);
+    document.addEventListener("webkitfullscreenchange", syncChromeSurface as EventListener);
+
+    const disposeContrast = attachStatusBarContrast(shellRoot);
 
     if (isEnvironmentShellContainerHost(host)) {
         root.slot = SHELL_SLOT.overlay;
@@ -127,7 +186,12 @@ export function mountEnvironmentChrome(
         statusBar,
         taskbar,
         disposeDevice: () => {
-            desktopMq?.removeEventListener?.("change", syncDesktopAttr);
+            desktopMq?.removeEventListener?.("change", syncChromeSurface);
+            for (const mq of displayMqs) mq.removeEventListener?.("change", syncChromeSurface);
+            document.removeEventListener("fullscreenchange", syncChromeSurface);
+            document.removeEventListener("webkitfullscreenchange", syncChromeSurface as EventListener);
+            disposeContrast();
+            disposeStatusBar();
             device.dispose();
         }
     };

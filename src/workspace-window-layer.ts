@@ -388,8 +388,8 @@ export function createWorkspaceWindowLayer(
         const model = createChromeModel(title, {
             x: 72 + offset,
             y: 72 + offset,
-            w: 480,
-            h: 360,
+            w: 640,
+            h: 480,
             z: topZ.value + 1
         });
         topZ.value = model.z.value;

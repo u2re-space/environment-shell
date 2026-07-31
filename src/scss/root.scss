@@ -9,6 +9,10 @@
 .env-shell-root {
     color-scheme: light dark;
 
+    /* WHY: TaskBar.scss (fl.ui) cannot @use env-shell Sass vars across package realpath. */
+    --env-z-shell-chrome: #{v.$z-shell-chrome};
+    --env-z-shell-overlays: #{v.$z-shell-overlays};
+
     /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
     --color-surface: var(--wf-md-surface, oklch(0.16 0.02 280));
     --color-on-surface: var(--wf-md-on-surface, oklch(0.93 0.02 274));
@@ -53,7 +57,7 @@
      * Home padding and ui-window bottom inset must share the same reserve or the grid
      * sits in a dead band and icons look “stuck” / nav appears missing.
      */
-    --env-mobile-dock-reserve: calc(3rem + env(safe-area-inset-bottom, 0px));
+    --env-mobile-dock-reserve: calc(0rem + env(safe-area-inset-bottom, 0px));
     --env-shell-chrome-stack-reserve: var(--env-mobile-dock-reserve);
 
     @media (min-width: v.$bp-desktop-min) {

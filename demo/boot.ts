@@ -30,7 +30,7 @@ const focusedTaskId = ref<string>("home");
 const viewerBody = buildViewerView(selectedPath, viewerStatus);
 
 let setFocusedTaskId: ((id: string) => void) | null = null;
-let syncWindowTasks: ((windows: import("../src/components/taskbar").EnvWindowTaskDescriptor[]) => void) | null =
+let syncWindowTasks: ((windows: import("../src/components/taskbar/element/TaskBar").EnvWindowTaskDescriptor[]) => void) | null =
     null;
 
 const app = document.getElementById("app") ?? document.body;

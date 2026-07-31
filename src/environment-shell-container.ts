@@ -14,7 +14,7 @@
  * Host display/box-sizing live in `:host` SCSS instead.
  */
 //@ts-ignore vite inline
-import containerStyles from "./scss/environment-shell-container.scss?inline";
+import containerStyles from "./scss/container.scss?inline";
 
 import { SHELL_SLOT } from "boot/shell-slots";
 

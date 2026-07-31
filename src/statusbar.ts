@@ -1,1 +1,0 @@
-components/statusbar.ts

@@ -4,7 +4,10 @@
 @use "root";
 @use "dwm";
 @use "home";
-@use "chrome";
+@use "statusbar";
+@use "taskbar";
+@use "navbar";
 @use "adaptive";
 @use "app-menu";
 @use "crx";
+@use "pwa";

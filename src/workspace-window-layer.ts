@@ -1,8 +1,9 @@
 /*
  * Filename: workspace-window-layer.ts
  * FullPath: modules/shells/environment-shell/src/workspace-window-layer.ts
- * Change date and time: 13.05.00_29.07.2026
+ * Change date and time: 11.15.00_31.07.2026
  * Reason for changes: closeAllWindows for mobile Home (replaces title Close).
+ *   2026-07-31: Home minimizes (collapse) instead of dispose; minimize works on mobile.
  */
 /**
  * WHY: Home (`mountViewModule` into workspace) stays under floating `ui-window`
@@ -27,8 +28,8 @@ import {
 } from "./window/views/markdown-view-window.ts";
 import { mountViewModule } from "./window/views/view-mount.ts";
 import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay.ts";
-import { mountUiWindow } from "./mount-ui-window.ts";
-import type { EnvWindowTaskDescriptor } from "./components/taskbar.ts";
+import { mountUiWindow } from "./window/window/mount-ui-window.js";
+import type { EnvWindowTaskDescriptor } from "./components/taskbar/element/TaskBar.js";
 
 /** Direct-child managed window tagged via {@link mountUiWindow}'s `managedViewKey`. */
 function findKeyedFrame(workspace: HTMLElement, key: string): HTMLElement | null {
@@ -163,13 +164,15 @@ export type WorkspaceWindowLayer = {
     dispose: () => void;
     /** Bring keyed window to front if it exists. */
     focusWindow: (viewId: string) => boolean;
-    /** Minimize a managed window (desktop). */
+    /** Minimize / collapse a managed window (desktop + mobile). */
     minimizeWindow: (viewId: string) => boolean;
+    /** Minimize every managed window (Home / Show desktop). */
+    minimizeAllWindows: () => void;
     /** Close / dispose a managed window. */
     closeWindow: (viewId: string) => boolean;
     /** Clear window focus markers (e.g. when Home task is selected). */
     blurWindows: () => void;
-    /** Dispose all managed windows (mobile Home / leave view). */
+    /** Dispose all managed windows (explicit close-all / leave view). */
     closeAllWindows: () => void;
     /** Promote a managed window to `native-mode` (mono/task). */
     enterNative: (viewId: string) => boolean;
@@ -488,10 +491,7 @@ export function createWorkspaceWindowLayer(
         const id = normalizeMarkdownViewWindowId(String(viewId || ""));
         const m = managed.get(id);
         if (!m || !findKeyedFrame(workspace, id)) return false;
-        // WHY: mobile has no minimize — Home closes views instead.
-        if (typeof matchMedia === "function" && matchMedia("(max-width: 640px)").matches) {
-            return false;
-        }
+        // WHY: Home / taskbar collapse must keep the process for switcher restore (not dispose).
         if (m.model.nativeMode?.value) m.model.nativeMode.value = false;
         if (m.model.desktopMaximized?.value) m.model.desktopMaximized.value = false;
         m.model.visible.value = true;
@@ -502,6 +502,21 @@ export function createWorkspaceWindowLayer(
         }
         emitTasking();
         return true;
+    };
+
+    /** Collapse all floating views so the launcher shows — apps stay in the switcher. */
+    const minimizeAllWindows = (): void => {
+        if (disposed) return;
+        exitNativeExcept(null);
+        focusedKey = null;
+        clearFocusedAttrs();
+        for (const m of managed.values()) {
+            if (!findKeyedFrame(workspace, m.key)) continue;
+            if (m.model.desktopMaximized?.value) m.model.desktopMaximized.value = false;
+            m.model.visible.value = true;
+            m.model.minimized.value = true;
+        }
+        emitTasking();
     };
 
     const closeWindow = (viewId: string): boolean => {
@@ -585,6 +600,7 @@ export function createWorkspaceWindowLayer(
         dispose,
         focusWindow,
         minimizeWindow,
+        minimizeAllWindows,
         closeWindow,
         blurWindows,
         closeAllWindows,

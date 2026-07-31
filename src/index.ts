@@ -10,17 +10,17 @@ import {
     mountEnvironmentStatusBar,
     type EnvironmentShellStatusRefs,
     type ShellDeviceStatus
-} from "./components/statusbar";
+} from "./components/statusbar/statusbar";
 import {
     mountEnvironmentTaskBar,
     type EnvironmentTaskbarOptions,
     type MountTaskBarResult
-} from "./components/taskbar";
+} from "./components/taskbar/element/TaskBar";
 import { isEnvironmentShellContainerHost } from "./environment-shell-container";
 import { SHELL_SLOT } from "boot/shell-slots";
 
-export * from "./components/statusbar";
-export * from "./components/taskbar";
+export * from "./components/statusbar/statusbar";
+export * from "./components/taskbar/element/TaskBar";
 export * from "./components/wallpaper";
 
 /** Floating `ui-window` layer over workspace home — lazy view modules + optional reader body. */
@@ -32,7 +32,7 @@ export {
     type WorkspaceWindowLayer
 } from "./workspace-window-layer";
 
-export { mountUiWindow, type MountUiWindowOptions } from "./mount-ui-window";
+export { mountUiWindow, type MountUiWindowOptions } from "./window/window/mount-ui-window";
 
 export {
     ENV_SHELL_OVERLAYS_ATTR,

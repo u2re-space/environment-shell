@@ -16,6 +16,16 @@
 .env-shell-root {
     color-scheme: light dark;
 
+    /* WHY: wf-demo.css pins a dark baseline; flip Material-ish tokens so launcher icons/labels contrast on light tiles. */
+    --base-color-neutralized: color-mix(in oklab, var(--base-color) 60%, gray);
+    --wf-md-surface: --u2-color-mod(var(--base-color-neutralized), 990);
+    --wf-md-surf-container-low: --u2-color-mod(var(--base-color-neutralized), 970);
+    --wf-md-surf-container: --u2-color-mod(var(--base-color-neutralized), 980);
+    --wf-md-surf-container-high: --u2-color-mod(var(--base-color-neutralized), 990);
+    --wf-md-outline-variant: color-mix(in oklab, --u2-color-mod(var(--base-color-neutralized), 900) 14%, transparent);
+    --wf-md-on-surface: --u2-color-mod(var(--base-color-neutralized), 10);
+    --wf-md-on-surface-variant: --u2-color-mod(var(--base-color-neutralized), 20);
+
     /* WHY: TaskBar.scss (fl.ui) cannot @use env-shell Sass vars across package realpath. */
     --env-z-shell-chrome: #{v.$z-shell-chrome};
     --env-z-shell-overlays: #{v.$z-shell-overlays};
@@ -30,7 +40,7 @@
 
     /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
     /* WHY: WallpaperTheme may write --color-primary; box fallback = familiar veela blue. */
-    --wf-md-seed: var(--color-primary, #5a7fff);
+    --wf-md-seed: var(--base-color, var(--color-primary, #5a7fff));
     --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980));
     --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10));
     --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20));

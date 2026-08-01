@@ -31,24 +31,24 @@
     /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
     /* WHY: WallpaperTheme may write --color-primary; box fallback = familiar veela blue. */
     --wf-md-seed: var(--color-primary, #5a7fff);
-    --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 940));
-    --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100));
-    --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 280));
-    --color-surface-container: var(--wf-md-surf-container, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 860));
-    --color-surface-container-high: var(--wf-md-surf-container-high, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 820));
+    --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980));
+    --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10));
+    --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20));
+    --color-surface-container: var(--wf-md-surf-container, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980));
+    --color-surface-container-high: var(--wf-md-surf-container-high, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 990));
     --color-outline-variant: var(--wf-md-outline-variant, color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100) 12%, transparent));
-    --on-surface-color: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100));
-    --on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 280));
+    --on-surface-color: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10));
+    --on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20));
 
     @media (prefers-color-scheme: light) {
         /* WHY: wf-demo.css pins a dark baseline; flip Material-ish tokens so launcher icons/labels contrast on light tiles. */
-        --wf-md-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 60);
-        --wf-md-surf-container-low: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100);
-        --wf-md-surf-container: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 160);
-        --wf-md-surf-container-high: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 220);
+        --wf-md-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10);
+        --wf-md-surf-container-low: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20);
+        --wf-md-surf-container: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10);
+        --wf-md-surf-container-high: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 0);
         --wf-md-outline-variant: color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 900) 14%, transparent);
-        --wf-md-on-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 900);
-        --wf-md-on-surface-variant: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 700);
+        --wf-md-on-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980);
+        --wf-md-on-surface-variant: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 970);
 
         --color-surface: var(--wf-md-surface);
         --color-on-surface: var(--wf-md-on-surface);

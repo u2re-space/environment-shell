@@ -1,8 +1,8 @@
 /*
  * Filename: root.scss
  * FullPath: modules/shells/environment-shell/src/scss/root.scss
- * Change date and time: 16.30.00_31.07.2026
- * Reason for changes: Light --wf-md-* via --u2-color-mod; keep --color-* bridge.
+ * Change date and time: 09.00.00_02.08.2026
+ * Reason for changes: Follow html color-scheme / --color-* SoT; drop prefers-color-scheme palette fork.
  */
 
 /* WHY: Layer wallpaper under workspace; wf-demo scrim must not paint over canvas. */
@@ -14,17 +14,11 @@
 }
 
 .env-shell-root {
-    color-scheme: light dark;
-
-    /* WHY: wf-demo.css pins a dark baseline; flip Material-ish tokens so launcher icons/labels contrast on light tiles. */
-    --base-color-neutralized: color-mix(in oklab, var(--base-color) 60%, gray);
-    --wf-md-surface: --u2-color-mod(var(--base-color-neutralized), 990);
-    --wf-md-surf-container-low: --u2-color-mod(var(--base-color-neutralized), 970);
-    --wf-md-surf-container: --u2-color-mod(var(--base-color-neutralized), 980);
-    --wf-md-surf-container-high: --u2-color-mod(var(--base-color-neutralized), 990);
-    --wf-md-outline-variant: color-mix(in oklab, --u2-color-mod(var(--base-color-neutralized), 900) 14%, transparent);
-    --wf-md-on-surface: --u2-color-mod(var(--base-color-neutralized), 10);
-    --wf-md-on-surface-variant: --u2-color-mod(var(--base-color-neutralized), 20);
+    /*
+     * INVARIANT: Inherit used color-scheme from Theme.ts / Quick Settings on <html>
+     * so light-dark() tokens (veela) and surfaces flip with data-theme — not OS media alone.
+     */
+    color-scheme: inherit;
 
     /* WHY: TaskBar.scss (fl.ui) cannot @use env-shell Sass vars across package realpath. */
     --env-z-shell-chrome: #{v.$z-shell-chrome};
@@ -35,40 +29,29 @@
      * JS (`mountEnvironmentChrome`) may override when overlay is off.
      */
     --env-status-inset-top: 0px;
-    --env-status-fg: #f5f5f7;
-    --env-status-fg-muted: rgba(245, 245, 247, 0.78);
+    --env-status-fg: light-dark(#1c1c1e, #f5f5f7);
+    --env-status-fg-muted: color-mix(in oklab, var(--env-status-fg) 78%, transparent);
+    /* Launcher captions: wallpaper luminance probe overwrites these (attachStatusBarContrast). */
+    --env-launcher-fg: #f7f7f8;
+    --env-launcher-fg-shadow: rgb(0 0 0 / 0.88);
+    --env-launcher-fg-glow: rgb(0 0 0 / 0.45);
 
-    /* Bridge wf-demo tokens → SpeedDial / launcher (`--color-*`, `--on-surface-*`). */
-    /* WHY: WallpaperTheme may write --color-primary; box fallback = familiar veela blue. */
-    --wf-md-seed: var(--base-color, var(--color-primary, #5a7fff));
-    --color-surface: var(--wf-md-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980));
-    --color-on-surface: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10));
-    --color-on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20));
-    --color-surface-container: var(--wf-md-surf-container, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980));
-    --color-surface-container-high: var(--wf-md-surf-container-high, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 990));
-    --color-outline-variant: var(--wf-md-outline-variant, color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 100) 12%, transparent));
-    --on-surface-color: var(--wf-md-on-surface, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10));
-    --on-surface-variant: var(--wf-md-on-surface-variant, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20));
-
-    @media (prefers-color-scheme: light) {
-        /* WHY: wf-demo.css pins a dark baseline; flip Material-ish tokens so launcher icons/labels contrast on light tiles. */
-        --wf-md-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10);
-        --wf-md-surf-container-low: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 20);
-        --wf-md-surf-container: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 10);
-        --wf-md-surf-container-high: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 0);
-        --wf-md-outline-variant: color-mix(in oklab, --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 900) 14%, transparent);
-        --wf-md-on-surface: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 980);
-        --wf-md-on-surface-variant: --u2-color-mod(var(--wf-md-primary, var(--wf-md-seed)), 970);
-
-        --color-surface: var(--wf-md-surface);
-        --color-on-surface: var(--wf-md-on-surface);
-        --color-on-surface-variant: var(--wf-md-on-surface-variant);
-        --color-surface-container: var(--wf-md-surf-container);
-        --color-surface-container-high: var(--wf-md-surf-container-high);
-        --color-outline-variant: var(--wf-md-outline-variant);
-        --on-surface-color: var(--wf-md-on-surface);
-        --on-surface-variant: var(--wf-md-on-surface-variant);
-    }
+    /*
+     * Bridge only — values come from veela `_tokens.scss` (-theme-unified).
+     * No hex / mod fallbacks: @property + tokens load before shell chrome.
+     */
+    --base-color-neutralized: color-mix(in oklab, var(--base-color) 60%, gray);
+    --wf-md-seed: var(--base-color);
+    --wf-md-primary: var(--color-primary);
+    --wf-md-surface: var(--color-surface);
+    --wf-md-surf-container-low: var(--color-surface-container-low);
+    --wf-md-surf-container: var(--color-surface-container);
+    --wf-md-surf-container-high: var(--color-surface-container-high);
+    --wf-md-outline-variant: var(--color-outline-variant);
+    --wf-md-on-surface: var(--color-on-surface);
+    --wf-md-on-surface-variant: var(--color-on-surface-variant);
+    --on-surface-color: var(--color-on-surface);
+    --on-surface-variant: var(--color-on-surface-variant);
 
     position: relative;
     isolation: isolate;
@@ -95,6 +78,8 @@
     /* Overlay mode: top inset for home launcher under transparent statusband. */
     &[data-status-overlay] {
         --env-status-inset-top: max(2rem, env(safe-area-inset-top, 0px));
+        /* Overlay status sits on wallpaper — prefer light glyphs on photo, dark when light theme UI. */
+        --env-status-fg: light-dark(#1c1c1e, #f5f5f7);
     }
 
     &[data-standalone] {
@@ -143,4 +128,55 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+}
+
+/*
+ * WHY: Env views live in light DOM under ui-window — force view tokens from concrete
+ * html[data-theme] surfaces so Markdown/Settings never keep OS-dark light-dark() sides.
+ */
+html[data-theme="light"] {
+    .env-shell-root,
+    .env-shell-root ui-window,
+    .env-shell-root .view-viewer,
+    .env-shell-root .view-settings {
+        color-scheme: light only;
+    }
+
+    .env-shell-root .view-viewer {
+        --view-bg: var(--color-surface);
+        --view-fg: var(--color-on-surface);
+        --view-code-bg: var(--color-surface-container-low);
+        background-color: var(--view-bg);
+        color: var(--view-fg);
+    }
+
+    /* Launcher tiles: force dark glyph ink immediately (no wait for Settings sheet). */
+    .env-shell-root .ui-ws-item-icon ui-icon {
+        color-scheme: light only;
+        --icon-color: --u2-color-mod(var(--base-color, var(--color-primary, #5a7fff)), 900);
+        color: var(--icon-color);
+    }
+}
+
+html[data-theme="dark"] {
+    .env-shell-root,
+    .env-shell-root ui-window,
+    .env-shell-root .view-viewer,
+    .env-shell-root .view-settings {
+        color-scheme: dark only;
+    }
+
+    .env-shell-root .view-viewer {
+        --view-bg: var(--color-surface);
+        --view-fg: var(--color-on-surface);
+        --view-code-bg: var(--color-surface-container);
+        background-color: var(--view-bg);
+        color: var(--view-fg);
+    }
+
+    .env-shell-root .ui-ws-item-icon ui-icon {
+        color-scheme: dark only;
+        --icon-color: --u2-color-mod(var(--base-color, var(--color-primary, #5a7fff)), 100);
+        color: var(--icon-color);
+    }
 }

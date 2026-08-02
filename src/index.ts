@@ -21,11 +21,19 @@ import {
     type MountTaskBarResult
 } from "./components/taskbar/element/TaskBar";
 import { isEnvironmentShellContainerHost } from "./environment-shell-container";
+import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay";
 import { SHELL_SLOT } from "boot/shell-slots";
+/* Side-effect: register `ui-calendar-flyout` / `ui-quick-settings` CEs. */
+import { setChromeFlyoutShellHost } from "./components/flyout/ChromeFlyout";
+import "./components/calendar/CalendarFlyout";
+import { restoreQuickFilters } from "./components/settings/QuickSettings";
 
 export * from "./components/statusbar/statusbar";
 export * from "./components/taskbar/element/TaskBar";
 export * from "./components/wallpaper";
+export * from "./components/flyout/ChromeFlyout";
+export * from "./components/calendar/CalendarFlyout";
+export * from "./components/settings/QuickSettings";
 
 /** Floating `ui-window` layer over workspace home — lazy view modules + optional reader body. */
 export {
@@ -119,6 +127,13 @@ export function mountEnvironmentChrome(
         (host.closest?.("env-shell-container") as HTMLElement | null) ||
         host;
 
+    /* WHY: Chrome flyouts share the env overlay mount (calendar / quick settings). */
+    setChromeFlyoutShellHost(shellRoot);
+    (globalThis as { __ENV_OVERLAY_MOUNT__?: typeof getOrCreateEnvironmentOverlayMount })
+        .__ENV_OVERLAY_MOUNT__ = getOrCreateEnvironmentOverlayMount;
+    getOrCreateEnvironmentOverlayMount(shellRoot);
+    restoreQuickFilters();
+
     // WHY: Drive taskbar / status overlay from mq + display-mode + document fullscreen.
     const desktopMq =
         typeof matchMedia === "function" ? matchMedia("(min-width: 641px)") : null;
@@ -193,6 +208,7 @@ export function mountEnvironmentChrome(
             disposeContrast();
             disposeStatusBar();
             device.dispose();
+            setChromeFlyoutShellHost(null);
         }
     };
 }

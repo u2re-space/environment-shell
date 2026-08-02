@@ -148,6 +148,7 @@ html[data-theme="light"] {
         --view-code-bg: var(--color-surface-container-low);
         background-color: var(--view-bg);
         color: var(--view-fg);
+        color: contrast-color(var(--view-bg));
     }
 
     /* Launcher tiles: force dark glyph ink immediately (no wait for Settings sheet). */
@@ -172,6 +173,7 @@ html[data-theme="dark"] {
         --view-code-bg: var(--color-surface-container);
         background-color: var(--view-bg);
         color: var(--view-fg);
+        color: contrast-color(var(--view-bg));
     }
 
     .env-shell-root .ui-ws-item-icon ui-icon {

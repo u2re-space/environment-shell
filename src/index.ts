@@ -136,7 +136,7 @@ export function mountEnvironmentChrome(
 
     // WHY: Drive taskbar / status overlay from mq + display-mode + document fullscreen.
     const desktopMq =
-        typeof matchMedia === "function" ? matchMedia("(min-width: 641px)") : null;
+        typeof matchMedia === "function" ? matchMedia("(min-width: 641px) and (not ((pointer: coarse) or (hover: none)))") : null;
     const displayMqs =
         typeof matchMedia === "function"
             ? [

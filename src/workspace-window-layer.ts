@@ -1,9 +1,8 @@
 /*
  * Filename: workspace-window-layer.ts
  * FullPath: modules/shells/environment-shell/src/workspace-window-layer.ts
- * Change date and time: 11.15.00_31.07.2026
- * Reason for changes: closeAllWindows for mobile Home (replaces title Close).
- *   2026-07-31: Home minimizes (collapse) instead of dispose; minimize works on mobile.
+ * Change date and time: 10.25.00_02.08.2026
+ * Reason for changes: Re-assert native after view mount; loading placeholder while async.
  */
 /**
  * WHY: Home (`mountViewModule` into workspace) stays under floating `ui-window`
@@ -362,9 +361,26 @@ export function createWorkspaceWindowLayer(
             return;
         }
 
+        const startNativeIds = new Set(
+            (options.startNativeViewIds || []).map((v) =>
+                normalizeMarkdownViewWindowId(String(v || ""))
+            )
+        );
+        const wantNative =
+            startNativeIds.has(id) ||
+            String((opts as ViewOptions & { native?: unknown })?.native || "") === "1" ||
+            String((opts as { params?: { native?: string } })?.params?.native || "") === "1";
+
         const existing = managed.get(id);
         if (existing && findKeyedFrame(workspace, id)) {
             elevateModel(existing.model, id);
+            /* WHY: reopen / boot navigate must still promote to native immersive. */
+            if (wantNative && existing.model.nativeMode) {
+                existing.model.nativeMode.value = true;
+                existing.model.minimized.value = false;
+                existing.model.visible.value = true;
+                exitNativeExcept(id);
+            }
             return;
         }
         if (existing && !findKeyedFrame(workspace, id)) {
@@ -382,6 +398,14 @@ export function createWorkspaceWindowLayer(
         const body = document.createElement("div");
         body.className = "wf-view-host env-ui-window__view-host";
         body.setAttribute("part", "view-host");
+        /* WHY: async import can take a beat — never leave a blank native frame with no feedback. */
+        {
+            const loading = document.createElement("p");
+            loading.className = "wf-view-placeholder__hint";
+            loading.style.cssText = "margin:1rem;font:400 .9rem/1.4 system-ui,sans-serif;opacity:.8";
+            loading.textContent = `Loading ${titleForView(id, options.viewTitles)}…`;
+            body.append(loading);
+        }
 
         const offset = managed.size * 24;
         const title = titleForView(id, options.viewTitles);
@@ -393,16 +417,6 @@ export function createWorkspaceWindowLayer(
             z: topZ.value + 1
         });
         topZ.value = model.z.value;
-
-        const startNativeIds = new Set(
-            (options.startNativeViewIds || []).map((v) =>
-                normalizeMarkdownViewWindowId(String(v || ""))
-            )
-        );
-        const wantNative =
-            startNativeIds.has(id) ||
-            String((opts as ViewOptions & { native?: unknown })?.native || "") === "1" ||
-            String((opts as { params?: { native?: string } })?.params?.native || "") === "1";
 
         let disposeFrame: () => void = () => {};
         disposeFrame = mountUiWindow(workspace, model, body, () => elevateModel(model, id), {
@@ -452,6 +466,17 @@ export function createWorkspaceWindowLayer(
                 }
                 const cur = managed.get(id);
                 if (cur) cur.disposeView = unmountView;
+                /*
+                 * WHY: boot races (focusHome / minimizeAll / early enterNative) can leave the
+                 * frame minimized or non-native before the view finishes mounting — blank window.
+                 */
+                if (wantNative || model.nativeMode?.value) {
+                    model.nativeMode.value = true;
+                    model.minimized.value = false;
+                    model.visible.value = true;
+                    exitNativeExcept(id);
+                    elevateModel(model, id);
+                }
             },
             (err) => {
                 console.error(`[workspace-window-layer] mountViewModule failed for view "${id}"`, err);

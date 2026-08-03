@@ -1,5 +1,5 @@
 {
-    "include": ["./src/**/*.ts", "./demo/**/*.ts", "./test/**/*.ts", "./*.js"],
+    "include": ["./src/**/*.ts", "./demo/**/*.ts", "./test/**/*.ts", "./*.js", "../../projects/fl.ui/src/ui/speed-dial/needs-to-API.ts"],
     "exclude": ["./dist/**/*"],
     "compilerOptions": {
         "outDir": "./dist/",

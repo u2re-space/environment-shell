@@ -1,4 +1,5 @@
 /* Workspace is the flex stack for home + floating `.wf-frame`; padding/safe-area live in `home-view` SCSS. */
 .env-shell-workspace {
     padding: 0;
+    background-color: transparent !important;
 }

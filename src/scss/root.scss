@@ -29,12 +29,12 @@
      * JS (`mountEnvironmentChrome`) may override when overlay is off.
      */
     --env-status-inset-top: 0px;
-    --env-status-fg: light-dark(#1c1c1e, #f5f5f7);
-    --env-status-fg-muted: color-mix(in oklab, var(--env-status-fg) 78%, transparent);
-    /* Launcher captions: wallpaper luminance probe overwrites these (attachStatusBarContrast). */
-    --env-launcher-fg: #f7f7f8;
-    --env-launcher-fg-shadow: rgb(0 0 0 / 0.88);
-    --env-launcher-fg-glow: rgb(0 0 0 / 0.45);
+    /*
+     * NOTE: `--env-status-fg` / `--env-status-fg-muted` / `--env-launcher-fg*` color defaults are owned by
+     * veela `core/misc/_tokens.scss` (single source of truth) and inherit via `:root` — veela
+     * `@property` + tokens load before shell chrome (see "Bridge only" note below). The
+     * `&[data-status-overlay]` block keeps a scoped override documenting wallpaper intent.
+     */
 
     /*
      * Bridge only — values come from veela `_tokens.scss` (-theme-unified).

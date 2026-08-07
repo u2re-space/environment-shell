@@ -11,4 +11,4 @@ export {
     applyThemeFromWallpaper,
     applyWallpaperThemeSeeds,
     restoreWallpaperThemeCache,
-} from "fest/image";
+} from "@fest-lib/image";

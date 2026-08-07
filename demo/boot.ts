@@ -3,9 +3,9 @@
  * oriented home launcher, floating `ui-window` views over home, FL-UI `ui-statusbar` + `ui-taskbar` (tasking).
  */
 import type { ShellContext } from "views/types";
-import { ref } from "fest/object";
-import "fest/icon";
-import { initializeAppCanvasLayer, restoreWallpaperThemeCache } from "fest/image";
+import { ref } from "@fest-lib/object";
+import "@fest-lib/icon";
+import { initializeAppCanvasLayer, restoreWallpaperThemeCache } from "@fest-lib/image";
 
 import "../../window-frame/public/demo/wf-demo.css";
 import "../src/scss/main.scss";

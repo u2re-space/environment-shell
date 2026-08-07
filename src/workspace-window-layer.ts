@@ -13,7 +13,7 @@
  * node so paint order matches even if a sibling stacking context ignores z alone.
  */
 import type { ShellContext, ViewModule, ViewOptions } from "views/types";
-import { numberRef } from "fest/object";
+import { numberRef } from "@fest-lib/object";
 import { resolveOverlayMountPoint as resolveGlobalOverlay, resolveShellOverlaysMount } from "boot/shell-slots";
 
 import {

@@ -27,11 +27,11 @@
     box-sizing: border-box;
 }
 
-/* WHY: Wallpaper / canvas sits behind; never intercepts hits; clip bleed without clipping `fixed` overlays. */
+/* WHY: Wallpaper uses `position: fixed` — `overflow: clip` here would hide it after layout changes. */
 .esc-underlying {
     z-index: 0;
     pointer-events: none;
-    overflow: clip;
+    overflow: visible;
 }
 
 /* Main workspace: home, frames host, routed content. */

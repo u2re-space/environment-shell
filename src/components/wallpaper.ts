@@ -7,6 +7,7 @@ export {
     initializeAppCanvasLayer,
     setAppWallpaper,
     syncAppWallpaperOrient,
+    refreshAppWallpaperPaint,
     syncCanvasOrient,
     applyThemeFromWallpaper,
     applyWallpaperThemeSeeds,

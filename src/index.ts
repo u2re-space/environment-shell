@@ -8,6 +8,7 @@
 import {
     attachShellDeviceStatus,
     attachStatusBarContrast,
+    isNativeCapacitorHost,
     isShellStandaloneDisplay,
     matchShellDisplayMode,
     mountEnvironmentStatusBar,
@@ -105,11 +106,21 @@ export function mountEnvironmentChrome(
     options: MountEnvironmentChromeOptions
 ): MountEnvironmentChromeResult {
     const device = attachShellDeviceStatus();
-    const { element: statusBar, dispose: disposeStatusBar } = mountEnvironmentStatusBar(
-        options.shell,
-        options.introHtml,
-        device
-    );
+    const nativeCapacitor = isNativeCapacitorHost();
+    let statusBar: ReturnType<typeof mountEnvironmentStatusBar>["element"];
+    let disposeStatusBar: () => void;
+    if (nativeCapacitor) {
+        statusBar = document.createElement("ui-statusbar");
+        statusBar.className = "env-ui-statusbar";
+        statusBar.hidden = true;
+        disposeStatusBar = () => {
+            statusBar.remove();
+        };
+    } else {
+        const mounted = mountEnvironmentStatusBar(options.shell, options.introHtml, device);
+        statusBar = mounted.element;
+        disposeStatusBar = mounted.dispose;
+    }
     const root = document.createElement("div");
     root.className = "env-shell-chrome wf-chrome-no-select";
 
@@ -188,7 +199,7 @@ export function mountEnvironmentChrome(
     document.addEventListener("fullscreenchange", syncChromeSurface);
     document.addEventListener("webkitfullscreenchange", syncChromeSurface as EventListener);
 
-    const disposeContrast = attachStatusBarContrast(shellRoot);
+    const disposeContrast = nativeCapacitor ? () => {} : attachStatusBarContrast(shellRoot);
 
     if (isEnvironmentShellContainerHost(host)) {
         root.slot = SHELL_SLOT.overlay;

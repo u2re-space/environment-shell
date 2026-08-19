@@ -1,0 +1,87 @@
+/*
+ * Filename: capacitor-native.scss
+ * FullPath: modules/projects/subsystem/shells/environment/scss/capacitor-native.scss
+ * Change date and time: 19.15.00_19.08.2026
+ * Reason for changes: Capacitor launcher — explorer flex-fill, safe-area, flat mobile windows.
+ */
+
+html[data-cwsp-native-shell="capacitor"],
+html[data-cwsp-native-shell="capacitor"] body {
+    background: transparent;
+}
+
+.env-shell-root[data-capacitor-native],
+html[data-cwsp-native-shell="capacitor"] .env-shell-root {
+    /* System status bar is OS-owned — hide FL-UI footer/overlay status band. */
+    .env-ui-statusbar,
+    ui-statusbar.env-ui-statusbar {
+        display: none !important;
+    }
+
+    .env-shell-chrome[data-status-overlay] {
+        --env-status-inset-top: 0px;
+    }
+
+    --env-status-inset-top: 0px;
+
+    /*
+     * Mobile managed windows: flat full-bleed panel above Home dock (no DWM chrome gap).
+     * Title spacer is suppressed via mount-ui-window `data-no-titlebar` on Capacitor mobile.
+     */
+    .env-shell-workspace > ui-window.env-ui-window[managed][data-mobile-max]:not([minimized]) {
+        --ui-win-radius: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    /*
+     * Explorer view chain lives in ui-window light DOM (slotted `.env-ui-window__body`).
+     * Shadow `.content-handler` rules cannot be targeted from here — stretch slotted body + descendants.
+     */
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) > .env-ui-window__body,
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .env-ui-window__view-host,
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .wf-mounted-view.view-explorer,
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .view-explorer,
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .view-explorer__content {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        align-self: stretch;
+        min-block-size: 0;
+        min-inline-size: 0;
+        block-size: 100%;
+        inline-size: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .view-explorer {
+        font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
+        font-size: 0.875rem;
+        line-height: 1.5;
+        background: var(--color-surface, var(--view-bg, light-dark(#f7f8fc, #1a1d24)));
+        color: var(--color-on-surface, var(--view-fg, light-dark(#1a1c1f, #e8eaed)));
+        border: none;
+        border-radius: 0;
+        /* WHY: WebView is edge-to-edge under the Android status bar when overlay status is off. */
+        padding-block-start: env(safe-area-inset-top, 0px);
+    }
+
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .view-explorer ui-file-manager {
+        flex: 1 1 auto;
+        min-block-size: 0;
+        min-inline-size: 0;
+        block-size: 100%;
+        inline-size: 100%;
+        /* Reserve scroll/trackpad room above mobile Home dock + gesture bar. */
+        padding-block-end: max(0.35rem, env(safe-area-inset-bottom, 0px));
+        box-sizing: border-box;
+    }
+
+    /* Coarse pointer: slightly taller list affordance (tokens pierce ui-file-manager shadow). */
+    @media screen and (pointer: coarse) and (hover: none) {
+        .env-shell-workspace ui-window.env-ui-window[managed] .view-explorer {
+            --explorer-row-height: 3rem;
+        }
+    }
+}

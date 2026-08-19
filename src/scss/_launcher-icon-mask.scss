@@ -1,0 +1,29 @@
+/*
+ * Filename: _launcher-icon-mask.scss
+ * FullPath: modules/projects/subsystem/shells/environment/scss/_launcher-icon-mask.scss
+ * Change date and time: 19.25.00_19.08.2026
+ * Reason for changes: Shared Android icon mask — optical fill + wallpaper ink tokens.
+ */
+
+@layer launcher-icons {
+    .ui-ws-item-icon-mask[data-launcher-icon] {
+        display: block;
+        box-sizing: border-box;
+        inline-size: var(--launcher-icon-size, var(--icon-size, 2.2rem));
+        block-size: var(--launcher-icon-size, var(--icon-size, 2.2rem));
+        flex-shrink: 0;
+        background-color: var(--icon-color, var(--on-surface-variant, var(--on-surface-color, currentColor)));
+        color: var(--icon-color, var(--on-surface-variant, var(--on-surface-color, currentColor)));
+        -webkit-mask-image: var(--launcher-app-icon-url);
+        mask-image: var(--launcher-app-icon-url);
+        -webkit-mask-size: calc(100% * var(--launcher-icon-mask-scale, 1.1));
+        mask-size: calc(100% * var(--launcher-icon-mask-scale, 1.1));
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-origin: center;
+        mask-origin: center;
+        filter: drop-shadow(0 1px 2px color-mix(in oklab, #000 14%, transparent));
+    }
+}

@@ -154,7 +154,10 @@ html[data-theme="light"] {
     }
 
     /* Launcher tiles: force dark glyph ink immediately (no wait for Settings sheet). */
-    .env-shell-root .ui-ws-item-icon ui-icon {
+    .env-shell-root .ui-ws-item-icon ui-icon,
+    .env-shell-root .ui-ws-item-icon .ui-ws-item-icon-mask,
+    .env-shell-root .env-shell-app-menu__tile-icon .ui-ws-item-icon-mask,
+    .env-shell-root .env-shell-app-menu__drag-ghost-icon .ui-ws-item-icon-mask {
         color-scheme: light only;
         --icon-color: --u2-color-mod(var(--base-color, var(--color-primary, #5a7fff)), 900);
         color: var(--icon-color);
@@ -178,7 +181,10 @@ html[data-theme="dark"] {
         color: contrast-color(var(--view-bg));
     }
 
-    .env-shell-root .ui-ws-item-icon ui-icon {
+    .env-shell-root .ui-ws-item-icon ui-icon,
+    .env-shell-root .ui-ws-item-icon .ui-ws-item-icon-mask,
+    .env-shell-root .env-shell-app-menu__tile-icon .ui-ws-item-icon-mask,
+    .env-shell-root .env-shell-app-menu__drag-ghost-icon .ui-ws-item-icon-mask {
         color-scheme: dark only;
         --icon-color: --u2-color-mod(var(--base-color, var(--color-primary, #5a7fff)), 100);
         color: var(--icon-color);

@@ -16,11 +16,16 @@ import {
     type EnvironmentShellStatusRefs,
     type ShellDeviceStatus
 } from "./components/statusbar/statusbar";
+import { installCapacitorNativeSafeAreaInsets } from "./components/statusbar/capacitor-native-safe-area";
 import {
     mountEnvironmentTaskBar,
     type EnvironmentTaskbarOptions,
     type MountTaskBarResult
 } from "./components/taskbar/element/TaskBar";
+import {
+    createChromeBookmarksMenuApi,
+    setBookmarksMenuApi
+} from "./components/app-menu/bookmarks-menu";
 import { isEnvironmentShellContainerHost } from "./environment-shell-container";
 import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay";
 import { SHELL_SLOT } from "boot/shell-slots";
@@ -107,6 +112,9 @@ export function mountEnvironmentChrome(
 ): MountEnvironmentChromeResult {
     const device = attachShellDeviceStatus();
     const nativeCapacitor = isNativeCapacitorHost();
+    if (nativeCapacitor) {
+        void installCapacitorNativeSafeAreaInsets();
+    }
     let statusBar: ReturnType<typeof mountEnvironmentStatusBar>["element"];
     let disposeStatusBar: () => void;
     if (nativeCapacitor) {
@@ -126,6 +134,13 @@ export function mountEnvironmentChrome(
 
     let taskbar: MountTaskBarResult | undefined;
     if (options.taskbar) {
+        /* CRX newtab: enable Win7-style Start menu over chrome.bookmarks when available. */
+        try {
+            const bookmarksApi = createChromeBookmarksMenuApi();
+            if (bookmarksApi) setBookmarksMenuApi(bookmarksApi);
+        } catch {
+            /* non-CRX / no permission */
+        }
         taskbar = mountEnvironmentTaskBar({ ...options.taskbar, device });
         root.append(taskbar.element, statusBar);
     } else {

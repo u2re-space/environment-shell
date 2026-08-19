@@ -1,13 +1,15 @@
 /*
  * Filename: capacitor-native.scss
  * FullPath: modules/projects/subsystem/shells/environment/scss/capacitor-native.scss
- * Change date and time: 19.15.00_19.08.2026
- * Reason for changes: Capacitor launcher — explorer flex-fill, safe-area, flat mobile windows.
+ * Change date and time: 05.45.00_20.08.2026
+ * Reason for changes: Capacitor — native safe-area token + flat window body inset (settings/viewer/explorer).
  */
 
 html[data-cwsp-native-shell="capacitor"],
 html[data-cwsp-native-shell="capacitor"] body {
     background: transparent;
+    --cwsp-native-safe-top: var(--env-native-safe-top, env(safe-area-inset-top, 0px));
+    --cwsp-native-safe-bottom: var(--env-native-safe-bottom, env(safe-area-inset-bottom, 0px));
 }
 
 .env-shell-root[data-capacitor-native],
@@ -32,6 +34,16 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         --ui-win-radius: 0;
         box-shadow: none;
         border-radius: 0;
+    }
+
+    /*
+     * Flat mobile windows (`data-no-titlebar`): one inset on the slotted body — covers settings tabs,
+     * markdown toolbar, explorer toolbar without per-view duplication.
+     */
+    .env-shell-workspace ui-window.env-ui-window[managed][data-no-titlebar]:not([minimized]) > .env-ui-window__body {
+        padding-block-start: var(--cwsp-native-safe-top);
+        padding-block-end: max(0.35rem, var(--cwsp-native-safe-bottom));
+        box-sizing: border-box;
     }
 
     /*
@@ -63,8 +75,6 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         color: var(--color-on-surface, var(--view-fg, light-dark(#1a1c1f, #e8eaed)));
         border: none;
         border-radius: 0;
-        /* WHY: WebView is edge-to-edge under the Android status bar when overlay status is off. */
-        padding-block-start: env(safe-area-inset-top, 0px);
     }
 
     .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) .view-explorer ui-file-manager {
@@ -73,8 +83,35 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         min-inline-size: 0;
         block-size: 100%;
         inline-size: 100%;
-        /* Reserve scroll/trackpad room above mobile Home dock + gesture bar. */
-        padding-block-end: max(0.35rem, env(safe-area-inset-bottom, 0px));
+        /* Reserve scroll room above mobile Home dock + gesture bar (body also pads bottom). */
+        padding-block-end: max(0.35rem, var(--cwsp-native-safe-bottom));
+        box-sizing: border-box;
+    }
+
+    /*
+     * Markdown viewer (`cw-view-viewer`): flex-fill only — top/bottom inset comes from `.env-ui-window__body`.
+     */
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) cw-view-viewer[data-cw-view-host],
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) cw-view-viewer[data-cw-view-host] .cw-view-viewer-shell {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        align-self: stretch;
+        min-block-size: 0;
+        min-inline-size: 0;
+        block-size: 100%;
+        inline-size: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window[managed]:not([minimized]) cw-view-viewer[data-cw-view-host] .view-viewer {
+        flex: 1 1 auto;
+        min-block-size: 0;
+        min-inline-size: 0;
+        block-size: 100%;
+        inline-size: 100%;
+        overflow: hidden;
         box-sizing: border-box;
     }
 

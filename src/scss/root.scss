@@ -71,7 +71,7 @@
     --env-shell-chrome-stack-reserve: var(--env-mobile-dock-reserve);
 
     @media (min-width: #{v.$bp-desktop-min}) {
-        --env-shell-chrome-stack-reserve: 7.5rem;
+        --env-shell-chrome-stack-reserve: 2.5rem;
         --env-mobile-dock-reserve: 0px;
     }
 

@@ -58,6 +58,8 @@ const VIEW_ICONS: Record<string, string> = {
     home: "house",
     viewer: "article",
     markdown: "article",
+    browser: "globe",
+    web: "globe",
     explorer: "books",
     settings: "gear-six",
     workcenter: "briefcase",
@@ -119,6 +121,8 @@ type ManagedWindow = {
 const VIEW_TITLES: Record<string, string> = {
     home: "Home",
     viewer: "Markdown",
+    browser: "Browser",
+    web: "Browser",
     explorer: "Explorer",
     settings: "Settings",
     workcenter: "Work Center",
@@ -131,20 +135,75 @@ const VIEW_TITLES: Record<string, string> = {
     person: "Contacts"
 };
 
+/** Stable managed-window key so each URL can have its own floating frame. */
+function browserWindowKey(url: string): string {
+    const href = String(url || "").trim();
+    if (!href) return "browser";
+    let h = 2166136261;
+    for (let i = 0; i < href.length; i++) {
+        h ^= href.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    return `browser:${(h >>> 0).toString(36)}`;
+}
+
+function browserTitleFromUrl(url: string): string {
+    try {
+        const host = new URL(url).hostname.replace(/^www\./i, "");
+        return host || "Browser";
+    } catch {
+        return "Browser";
+    }
+}
+
+function normalizeBrowserViewId(raw: string): string {
+    const id = String(raw || "").trim().toLowerCase();
+    if (id === "browser" || id === "web" || id === "iframe" || id === "web-view" || id === "webview") {
+        return "browser";
+    }
+    return id;
+}
+
+function iconForManagedKey(key: string): string {
+    const id = String(key || "").trim().toLowerCase();
+    if (VIEW_ICONS[id]) return VIEW_ICONS[id];
+    if (id.startsWith("browser:")) return VIEW_ICONS.browser;
+    return "app-window";
+}
+
 /**
- * Package-local defaults intentionally empty.
+ * Package-local defaults intentionally empty except built-in browser iframe view.
  * WHY: relative `../../../views/*-view` imports break when this file is consumed via
  * CWSP-shell's symlink (`src/frontend/shells/environment` → modules). Hosts must pass
  * {@link WorkspaceWindowLayerOptions.viewLoaders} (CWSP adapter / demo boot).
  */
-function defaultViewLoaderForId(_viewId: string): (() => Promise<ViewModule>) | null {
+function defaultViewLoaderForId(viewId: string): (() => Promise<ViewModule>) | null {
+    const id = normalizeBrowserViewId(viewId);
+    if (id === "browser") {
+        return () => import("./window/views/browser-view.ts") as Promise<ViewModule>;
+    }
     return null;
+}
+
+function readOpenViewExternalUrl(opts?: ViewOptions | Record<string, unknown> | null): string {
+    if (!opts || typeof opts !== "object") return "";
+    const o = opts as Record<string, unknown>;
+    const nested =
+        o.params && typeof o.params === "object" && !Array.isArray(o.params)
+            ? (o.params as Record<string, unknown>)
+            : {};
+    const raw = String(
+        nested.url || nested.href || nested.src || o.url || o.href || o.src || ""
+    ).trim();
+    return raw;
 }
 
 function titleForView(viewId: string, overrides?: Record<string, string>): string {
     const id = normalizeMarkdownViewWindowId(viewId) || String(viewId || "").trim().toLowerCase();
+    const base = id.startsWith("browser:") ? "browser" : id;
     if (overrides?.[id]) return overrides[id];
-    if (VIEW_TITLES[id]) return VIEW_TITLES[id];
+    if (overrides?.[base]) return overrides[base];
+    if (VIEW_TITLES[base]) return VIEW_TITLES[base];
     const raw = String(viewId || "").trim();
     return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "View";
 }
@@ -206,7 +265,7 @@ export function createWorkspaceWindowLayer(
             out.push({
                 id: m.key,
                 title: m.model.title || titleForView(m.key, options.viewTitles),
-                icon: VIEW_ICONS[m.key] || "app-window",
+                icon: iconForManagedKey(m.key),
                 focused: focusedKey === m.key,
                 minimized: Boolean(m.model.minimized.value),
                 visible: Boolean(m.model.visible.value)
@@ -290,8 +349,9 @@ export function createWorkspaceWindowLayer(
     };
 
     const viewLoaderForId = (viewId: string): (() => Promise<ViewModule>) | null => {
-        const id =
-            normalizeMarkdownViewWindowId(viewId) || String(viewId || "").trim().toLowerCase();
+        const id = normalizeBrowserViewId(
+            normalizeMarkdownViewWindowId(viewId) || String(viewId || "").trim().toLowerCase()
+        );
         const fromHost = options.viewLoaders?.[id];
         if (fromHost) return fromHost;
         return defaultViewLoaderForId(id);
@@ -350,10 +410,25 @@ export function createWorkspaceWindowLayer(
 
     const openViewWindow = (viewId: string, opts?: ViewOptions): void => {
         if (disposed) return;
-        const id = normalizeMarkdownViewWindowId(String(viewId || ""));
+        const rawId = String(viewId || "").trim();
+        let id = normalizeMarkdownViewWindowId(rawId);
+        id = normalizeBrowserViewId(id);
         if (!id || id === "home") return;
         // WHY: airpad removed from environment launcher UI (transport aliases stay elsewhere).
         if (id === "airpad") return;
+
+        const params = {
+            ...((((opts as ViewOptions | undefined)?.params || {}) as Record<string, string>) || {})
+        };
+        const externalUrl = readOpenViewExternalUrl(opts);
+        if (externalUrl) {
+            params.url = externalUrl;
+            params.href = externalUrl;
+        }
+        const managedKey =
+            id === "browser"
+                ? String(params.windowKey || "").trim() || browserWindowKey(externalUrl)
+                : id;
 
         /* WHY: Demo may pass `readerWindow`; both `viewer` and `markdown` requests collapse to the same key first. */
         if (isMarkdownViewManagedWindowKey(id) && options.readerWindow?.content) {
@@ -369,24 +444,49 @@ export function createWorkspaceWindowLayer(
         const wantNative =
             startNativeIds.has(id) ||
             String((opts as ViewOptions & { native?: unknown })?.native || "") === "1" ||
-            String((opts as { params?: { native?: string } })?.params?.native || "") === "1";
+            String(params.native || "") === "1";
 
-        const existing = managed.get(id);
-        if (existing && findKeyedFrame(workspace, id)) {
-            elevateModel(existing.model, id);
+        const existing = managed.get(managedKey);
+        if (existing && findKeyedFrame(workspace, managedKey)) {
+            elevateModel(existing.model, managedKey);
             /* WHY: reopen / boot navigate must still promote to native immersive. */
             if (wantNative && existing.model.nativeMode) {
                 existing.model.nativeMode.value = true;
                 existing.model.minimized.value = false;
                 existing.model.visible.value = true;
-                exitNativeExcept(id);
+                exitNativeExcept(managedKey);
+            }
+            /* Re-apply URL into an already-open browser iframe (params may have been late). */
+            if (id === "browser" && externalUrl) {
+                try {
+                    const frame = findKeyedFrame(workspace, managedKey);
+                    const iframe = frame?.querySelector?.("iframe.wf-browser__frame") as
+                        | HTMLIFrameElement
+                        | null;
+                    const input = frame?.querySelector?.("input.wf-browser__url") as
+                        | HTMLInputElement
+                        | null;
+                    if (iframe && iframe.src !== externalUrl) {
+                        iframe.src = externalUrl;
+                    }
+                    if (input) input.value = externalUrl;
+                    if (externalUrl) {
+                        try {
+                            existing.model.title = browserTitleFromUrl(externalUrl);
+                        } catch {
+                            /* title optional */
+                        }
+                    }
+                } catch {
+                    /* ignore */
+                }
             }
             return;
         }
-        if (existing && !findKeyedFrame(workspace, id)) {
+        if (existing && !findKeyedFrame(workspace, managedKey)) {
             /* WHY: `mountViewModule(host.replaceChildren)` on the workspace drops window nodes; reconcile stale refs. */
             existing.disposeView?.();
-            managed.delete(id);
+            managed.delete(managedKey);
             try {
                 existing.disposeFrame();
             } catch {
@@ -408,27 +508,30 @@ export function createWorkspaceWindowLayer(
         }
 
         const offset = managed.size * 24;
-        const title = titleForView(id, options.viewTitles);
+        const title =
+            id === "browser" && externalUrl
+                ? browserTitleFromUrl(externalUrl)
+                : titleForView(id, options.viewTitles);
         const model = createChromeModel(title, {
             x: 72 + offset,
             y: 72 + offset,
-            w: 640,
-            h: 480,
+            w: id === "browser" ? 720 : 640,
+            h: id === "browser" ? 520 : 480,
             z: topZ.value + 1
         });
         topZ.value = model.z.value;
 
         let disposeFrame: () => void = () => {};
-        disposeFrame = mountUiWindow(workspace, model, body, () => elevateModel(model, id), {
-            managedViewKey: id,
+        disposeFrame = mountUiWindow(workspace, model, body, () => elevateModel(model, managedKey), {
+            managedViewKey: managedKey,
             startNative: wantNative,
             onChromeChange: emitTasking,
             onClose: () => {
                 // WHY: delete first so disposeFrame re-entry cannot dispose twice.
-                const m = managed.get(id);
+                const m = managed.get(managedKey);
                 if (!m) return;
-                managed.delete(id);
-                if (focusedKey === id) focusedKey = null;
+                managed.delete(managedKey);
+                if (focusedKey === managedKey) focusedKey = null;
                 try {
                     m.disposeView?.();
                 } catch {
@@ -444,14 +547,28 @@ export function createWorkspaceWindowLayer(
         });
         if (wantNative) {
             model.nativeMode.value = true;
-            exitNativeExcept(id);
+            exitNativeExcept(managedKey);
         }
 
-        const rec: ManagedWindow = { key: id, model, disposeFrame, disposeView: undefined };
-        managed.set(id, rec);
-        elevateModel(model, id);
+        const rec: ManagedWindow = { key: managedKey, model, disposeFrame, disposeView: undefined };
+        managed.set(managedKey, rec);
+        elevateModel(model, managedKey);
 
         const mountOpts: ViewOptions = { ...(opts || {}), shellContext };
+        if (id === "browser" && externalUrl) {
+            mountOpts.params = {
+                ...(mountOpts.params || {}),
+                url: externalUrl,
+                href: externalUrl
+            };
+        } else if (externalUrl && !(mountOpts.params && (mountOpts.params.url || mountOpts.params.href))) {
+            /* Flat opts.url callers (viewer redirect / ShellContext typing). */
+            mountOpts.params = {
+                ...(mountOpts.params || {}),
+                url: externalUrl,
+                href: externalUrl
+            };
+        }
 
         if (!loader) {
             body.replaceChildren(placeholderBody(id, options.viewTitles));
@@ -464,7 +581,7 @@ export function createWorkspaceWindowLayer(
                     unmountView();
                     return;
                 }
-                const cur = managed.get(id);
+                const cur = managed.get(managedKey);
                 if (cur) cur.disposeView = unmountView;
                 /*
                  * WHY: boot races (focusHome / minimizeAll / early enterNative) can leave the
@@ -474,8 +591,8 @@ export function createWorkspaceWindowLayer(
                     model.nativeMode.value = true;
                     model.minimized.value = false;
                     model.visible.value = true;
-                    exitNativeExcept(id);
-                    elevateModel(model, id);
+                    exitNativeExcept(managedKey);
+                    elevateModel(model, managedKey);
                 }
             },
             (err) => {

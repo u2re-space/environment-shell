@@ -10,7 +10,8 @@
     isolation: isolate;
     /* WHY: `overflow: clip` breaks `position: fixed` overlays (context menus in overlay slot clip to wrong box). */
     overflow: visible;
-    min-block-size: 100dvb;
+    min-block-size: var(--lv-height, 100lvb);
+    block-size: var(--lv-height, 100lvb);
     color-scheme: light dark;
 }
 

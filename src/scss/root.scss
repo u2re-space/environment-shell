@@ -55,7 +55,8 @@
 
     position: relative;
     isolation: isolate;
-    min-block-size: 100dvb;
+    min-block-size: var(--lv-height, 100lvb);
+    block-size: var(--lv-height, 100lvb);
     /* Sync with shadow `:host`: do not clip `position:fixed` descendants (overlay slot context menus). */
     overflow: visible;
 
@@ -123,7 +124,8 @@
 .env-shell-workspace {
     position: relative;
     z-index: v.$z-shell-workspace;
-    min-block-size: 100dvb;
+    min-block-size: var(--lv-height, 100lvb);
+    block-size: var(--lv-height, 100lvb);
     inline-size: 100%;
     box-sizing: border-box;
     display: flex;

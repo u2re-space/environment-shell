@@ -12,8 +12,8 @@
         inline-size: var(--launcher-icon-size, var(--icon-size, 2.2rem));
         block-size: var(--launcher-icon-size, var(--icon-size, 2.2rem));
         flex-shrink: 0;
-        background-color: var(--icon-color, var(--on-surface-variant, var(--on-surface-color, currentColor)));
-        color: var(--icon-color, var(--on-surface-variant, var(--on-surface-color, currentColor)));
+        background-color: var(--icon-color, var(--sd-figure-ink, currentColor));
+        color: var(--icon-color, var(--sd-figure-ink, currentColor));
         -webkit-mask-image: var(--launcher-app-icon-url);
         mask-image: var(--launcher-app-icon-url);
         -webkit-mask-size: calc(100% * var(--launcher-icon-mask-scale, 1.1));

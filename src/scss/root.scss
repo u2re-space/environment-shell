@@ -30,10 +30,9 @@
      */
     --env-status-inset-top: 0px;
     /*
-     * NOTE: `--env-status-fg` / `--env-status-fg-muted` / `--env-launcher-fg*` color defaults are owned by
-     * veela `core/misc/_tokens.scss` (single source of truth) and inherit via `:root` — veela
-     * `@property` + tokens load before shell chrome (see "Bridge only" note below). The
-     * `&[data-status-overlay]` block keeps a scoped override documenting wallpaper intent.
+     * NOTE: `--env-status-fg` / `--env-launcher-fg*` color defaults are owned by veela
+     * `core/misc/_tokens.scss`. `--env-launcher-fg*` aliases `--wallpaper-contrast-color`
+     * (WallpaperTheme + statusbar luma). Do not fork hex here.
      */
 
     /*
@@ -78,8 +77,9 @@
     /* Overlay mode: top inset for home launcher under transparent statusband. */
     &[data-status-overlay] {
         --env-status-inset-top: max(2rem, env(safe-area-inset-top, 0px));
-        /* Overlay status sits on wallpaper — prefer light glyphs on photo, dark when light theme UI. */
-        --env-status-fg: light-dark(#1c1c1e, #f5f5f7);
+        /* Overlay status sits on the photo — wallpaper ink, not app theme / OS scheme. */
+        --env-status-fg: var(--wallpaper-contrast-color);
+        --env-status-fg-muted: color-mix(in oklab, var(--wallpaper-contrast-color) 78%, transparent);
     }
 
     &[data-standalone] {
@@ -154,9 +154,7 @@ html[data-theme="light"] {
         color: contrast-color(var(--view-bg));
     }
 
-    /* Launcher tiles: force dark glyph ink immediately (no wait for Settings sheet). */
-    .env-shell-root .ui-ws-item-icon ui-icon,
-    .env-shell-root .ui-ws-item-icon .ui-ws-item-icon-mask,
+    /* App Menu tiles sit on chrome — keep theme ink. Speed-dial glyphs use wallpaper contrast below. */
     .env-shell-root .env-shell-app-menu__tile-icon .ui-ws-item-icon-mask,
     .env-shell-root .env-shell-app-menu__drag-ghost-icon .ui-ws-item-icon-mask {
         color-scheme: light only;
@@ -182,8 +180,6 @@ html[data-theme="dark"] {
         color: contrast-color(var(--view-bg));
     }
 
-    .env-shell-root .ui-ws-item-icon ui-icon,
-    .env-shell-root .ui-ws-item-icon .ui-ws-item-icon-mask,
     .env-shell-root .env-shell-app-menu__tile-icon .ui-ws-item-icon-mask,
     .env-shell-root .env-shell-app-menu__drag-ghost-icon .ui-ws-item-icon-mask {
         color-scheme: dark only;

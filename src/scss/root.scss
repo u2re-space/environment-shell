@@ -64,11 +64,10 @@
     --env-window-z-boost: 400;
 
     /*
-     * WHY: Mobile chrome is a short Home nav (~3rem), not the tall desktop taskbar.
-     * Home padding and ui-window bottom inset must share the same reserve or the grid
-     * sits in a dead band and icons look “stuck” / nav appears missing.
+     * WHY: Home / App Menu still clear the floating Home FAB with this reserve.
+     * Open mobile windows do not — they go full-bleed and the FAB overlays.
      */
-    --env-mobile-dock-reserve: calc(3rem + env(safe-area-inset-bottom, 0px));
+    --env-mobile-dock-reserve: 3rem;
     --env-shell-chrome-stack-reserve: var(--env-mobile-dock-reserve);
 
     @media (min-width: #{v.$bp-desktop-min}) {

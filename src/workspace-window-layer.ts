@@ -1,8 +1,9 @@
 /*
  * Filename: workspace-window-layer.ts
  * FullPath: modules/shells/environment-shell/src/workspace-window-layer.ts
- * Change date and time: 10.25.00_02.08.2026
- * Reason for changes: Re-assert native after view mount; loading placeholder while async.
+ * Change date and time: 23.10.00_23.08.2026
+ * Reason for changes: Defer taskbar rebuild; cache z-boost so open does not force layout.
+ * FIND:hang-open
  */
 /**
  * WHY: Home (`mountViewModule` into workspace) stays under floating `ui-window`
@@ -27,7 +28,7 @@ import {
 } from "./window/views/markdown-view-window.ts";
 import { mountViewModule } from "./window/views/view-mount.ts";
 import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay.ts";
-import { mountUiWindow } from "./window/window/mount-ui-window.js";
+import { mountUiWindow, readEnvWindowZBoost } from "./window/window/mount-ui-window.js";
 import type { EnvWindowTaskDescriptor } from "./components/taskbar/element/TaskBar.js";
 
 /** Direct-child managed window tagged via {@link mountUiWindow}'s `managedViewKey`. */
@@ -41,17 +42,6 @@ function findKeyedFrame(workspace: HTMLElement, key: string): HTMLElement | null
         workspace.querySelector(`:scope > ui-window[data-wf-managed-view="${selKey}"]`) ||
         workspace.querySelector(`:scope > section.wf-frame[data-wf-managed-view="${selKey}"]`);
     return el instanceof HTMLElement ? el : null;
-}
-
-function readEnvWindowZBoost(workspace: HTMLElement): number {
-    const shell =
-        workspace.closest?.(".env-shell-root") ??
-        workspace.closest?.("env-shell-container") ??
-        workspace.parentElement;
-    if (!(shell instanceof HTMLElement)) return 0;
-    const raw = getComputedStyle(shell).getPropertyValue("--env-window-z-boost").trim();
-    const n = Number.parseInt(raw, 10);
-    return Number.isFinite(n) ? n : 0;
 }
 
 const VIEW_ICONS: Record<string, string> = {
@@ -255,9 +245,17 @@ export function createWorkspaceWindowLayer(
     const managed = new Map<string, ManagedWindow>();
     let disposed = false;
     let focusedKey: string | null = null;
+    // PERF: resolve --env-window-z-boost once while the home layer is already laid out.
+    readEnvWindowZBoost(workspace);
 
+    let taskingRaf = 0;
     const emitTasking = (): void => {
-        options.onTaskingChange?.(listWindowTasks());
+        if (disposed) return;
+        if (taskingRaf) return;
+        taskingRaf = requestAnimationFrame(() => {
+            taskingRaf = 0;
+            if (!disposed) options.onTaskingChange?.(listWindowTasks());
+        });
     };
 
     const listWindowTasks = (): EnvWindowTaskDescriptor[] => {
@@ -326,7 +324,7 @@ export function createWorkspaceWindowLayer(
             const bring = (frame as HTMLElement & { bringToFront?: (z: number) => void }).bringToFront;
             if (typeof bring === "function") bring.call(frame, zNow);
             // WHY: DOM order is a reliable paint fallback when siblings share stacking quirks.
-            if (frame.parentElement === workspace) {
+            if (frame.parentElement === workspace && frame !== workspace.lastElementChild) {
                 workspace.appendChild(frame);
             }
         }
@@ -614,6 +612,10 @@ export function createWorkspaceWindowLayer(
     const dispose = (): void => {
         if (disposed) return;
         disposed = true;
+        if (taskingRaf) {
+            cancelAnimationFrame(taskingRaf);
+            taskingRaf = 0;
+        }
         for (const m of managed.values()) {
             m.disposeView?.();
             m.disposeFrame();

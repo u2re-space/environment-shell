@@ -30,6 +30,7 @@ import { mountViewModule } from "./window/views/view-mount.ts";
 import { getOrCreateEnvironmentOverlayMount } from "./environment-overlay.ts";
 import { mountUiWindow, readEnvWindowZBoost } from "./window/window/mount-ui-window.js";
 import type { EnvWindowTaskDescriptor } from "./components/taskbar/element/TaskBar.js";
+import { tryLaunchSiblingView } from "fl-ui/speed-dial/action-registry";
 
 /** Direct-child managed window tagged via {@link mountUiWindow}'s `managedViewKey`. */
 function findKeyedFrame(workspace: HTMLElement, key: string): HTMLElement | null {
@@ -410,12 +411,27 @@ export function createWorkspaceWindowLayer(
 
     const openViewWindow = (viewId: string, opts?: ViewOptions): void => {
         if (disposed) return;
-        const rawId = String(viewId || "").trim();
-        let id = normalizeMarkdownViewWindowId(rawId);
+        let id = normalizeMarkdownViewWindowId(String(viewId || "").trim());
         id = normalizeBrowserViewId(id);
         if (!id || id === "home") return;
         // WHY: airpad removed from environment launcher UI (transport aliases stay elsewhere).
         if (id === "airpad") return;
+        // INVARIANT: Capacitor launcher must not mount explorer/document in-process.
+        try {
+            if (document.documentElement.dataset.cwspSku === "launcher") {
+                void tryLaunchSiblingView(id).then((launched) => {
+                    if (!launched) openViewWindowContinue(id, opts);
+                });
+                return;
+            }
+        } catch {
+            /* tests */
+        }
+        openViewWindowContinue(id, opts);
+    };
+
+    const openViewWindowContinue = (id: string, opts?: ViewOptions): void => {
+        if (disposed) return;
 
         const params = {
             ...((((opts as ViewOptions | undefined)?.params || {}) as Record<string, string>) || {})

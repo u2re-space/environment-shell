@@ -416,9 +416,13 @@ export function createWorkspaceWindowLayer(
         if (!id || id === "home") return;
         // WHY: airpad removed from environment launcher UI (transport aliases stay elsewhere).
         if (id === "airpad") return;
-        // INVARIANT: Capacitor launcher must not mount explorer/document in-process.
+        // INVARIANT: Capacitor launcher APK must not mount explorer/document in-process.
+        // WHY: web u2re.space stamps data-cwsp-sku=launcher too — do not wait on launcher IPC.
         try {
-            if (document.documentElement.dataset.cwspSku === "launcher") {
+            const native =
+                document.documentElement.dataset.cwspNativeShell === "capacitor" ||
+                Boolean((globalThis as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
+            if (document.documentElement.dataset.cwspSku === "launcher" && native) {
                 void tryLaunchSiblingView(id).then((launched) => {
                     if (!launched) openViewWindowContinue(id, opts);
                 });

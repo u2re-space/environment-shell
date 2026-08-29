@@ -332,7 +332,11 @@ export function createWorkspaceWindowLayer(
         emitTasking();
     };
 
-    const shellContext: ShellContext = {};
+    const shellContext: ShellContext = {
+        showMessage: (msg: unknown) => {
+            console.log(`[environment] ${typeof msg === "string" ? msg : String(msg ?? "")}`);
+        }
+    };
 
     const envOverlayMount =
         options.overlayMountHost ? getOrCreateEnvironmentOverlayMount(options.overlayMountHost) : null;
@@ -475,6 +479,23 @@ export function createWorkspaceWindowLayer(
                 existing.model.minimized.value = false;
                 existing.model.visible.value = true;
                 exitNativeExcept(managedKey);
+            }
+            /* Re-apply src into an already-open markdown window. */
+            if (isMarkdownViewManagedWindowKey(id)) {
+                const src = String(params.src || params.source || params.path || "").trim();
+                const filename = String(params.filename || params.name || "").trim();
+                const content = String(params.content || "");
+                if (src || content.trim()) {
+                    try {
+                        globalThis.dispatchEvent(
+                            new CustomEvent("cwsp:document-open", {
+                                detail: { src, filename, content }
+                            })
+                        );
+                    } catch {
+                        /* viewer listener optional */
+                    }
+                }
             }
             /* Re-apply URL into an already-open browser iframe (params may have been late). */
             if (id === "browser" && externalUrl) {

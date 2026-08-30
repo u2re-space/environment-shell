@@ -7,6 +7,7 @@
             "views/types": ["../../views/shared/types.ts"],
             "views/home-view": ["../../views/home-view/src/index.ts"],
             "@fest-lib/dom": ["../../projects/dom.ts/src/index.ts"],
+            "@fest-lib/style-lib": ["../../projects/style.ts/src/index.ts"],
             "@fest-lib/lure": ["../../projects/lur.e/src/index.ts"],
             "@fest-lib/object": ["../../projects/object.ts/src/index.ts"],
             "@fest-lib/core": ["../../projects/core.ts/src/index.ts"],

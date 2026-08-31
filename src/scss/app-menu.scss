@@ -1,3 +1,3 @@
-/* Bridge: app-menu / launcher drawer styles live next to the app-menu component after regroup. */
-@use "launcher-icon-mask";
-@use "../components/app-menu/AppMenu";
+/* Canonical reusable chrome comes from Veela; this shell keeps only composition order. */
+@use "veela-lib/ui/components/launcher-icon-mask";
+@use "veela-lib/ui/components/app-menu";

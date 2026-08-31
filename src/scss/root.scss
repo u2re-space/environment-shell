@@ -9,6 +9,7 @@
 
 @use "lib/variables" as v;
 
+@layer layout {
 .env-shell-root.wf-demo-root {
     background: transparent;
 }
@@ -31,7 +32,7 @@
     --env-status-inset-top: 0px;
     /*
      * NOTE: `--env-status-fg` / `--env-launcher-fg*` color defaults are owned by veela
-     * `core/misc/_tokens.scss`. `--env-launcher-fg*` aliases `--wallpaper-contrast-color`
+     * `core/_tokens.scss`. `--env-launcher-fg*` aliases `--wallpaper-contrast-color`
      * (WallpaperTheme + statusbar luma). Do not fork hex here.
      */
 
@@ -132,11 +133,13 @@
     align-items: stretch;
     background-color: transparent !important;
 }
+}
 
 /*
  * WHY: Env views live in light DOM under ui-window — force view tokens from concrete
  * html[data-theme] surfaces so Markdown/Settings never keep OS-dark light-dark() sides.
  */
+@layer overrides {
 html[data-theme="light"] {
     .env-shell-root,
     .env-shell-root ui-window,
@@ -186,4 +189,5 @@ html[data-theme="dark"] {
         --icon-color: --u2-color-mod(var(--base-color, var(--color-primary, #5a9ec8)), 100);
         color: var(--icon-color);
     }
+}
 }

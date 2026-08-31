@@ -1,2 +1,2 @@
-/* Bridge: chrome/taskbar host styles live next to the taskbar component after regroup. */
-@use "../components/taskbar/scss/TaskBar";
+/* Canonical taskbar host styles live in Veela. */
+@use "veela-lib/ui/components/taskbar";

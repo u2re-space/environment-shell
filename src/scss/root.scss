@@ -9,11 +9,22 @@
 
 @use "lib/variables" as v;
 
-@layer layout {
+/*
+ * WHY: Unlayered — `.wf-demo-root` scrim in wf-demo.css is unlayered.
+ * A layered kill here used to lose, so the Material radial fill covered wallpaper.
+ */
 .env-shell-root.wf-demo-root {
     background: transparent;
+    overflow: visible;
 }
 
+/* WHY: marketing `.view-home` fill is in `@layer components`; unlayered here keeps wallpaper visible. */
+.view-home.env-home-workspace,
+.view-home.view-home--grid {
+    background: transparent !important;
+}
+
+@layer layout {
 .env-shell-root {
     /*
      * INVARIANT: Inherit used color-scheme from Theme.ts / Quick Settings on <html>

@@ -1,7 +1,17 @@
 {
-    "include": ["./src/**/*.ts", "./demo/**/*.ts", "./test/**/*.ts", "./*.js", "../../projects/fl.ui/src/ui/speed-dial/needs-to-API.ts"],
+    "include": [
+        "./src/**/*.ts",
+        "./demo/**/*.ts",
+        "./test/**/*.ts",
+        "./*.js",
+        "../../views/view-resolve-aliases.js",
+        "../../views/shared/vite.view.config.js",
+        "../../views/shared/vite-ssre.mjs",
+        "../../projects/fl.ui/src/ui/speed-dial/needs-to-API.ts"
+    ],
     "exclude": ["./dist/**/*"],
     "compilerOptions": {
+        "rootDir": "../..",
         "outDir": "./dist/",
         "paths": {
             "views/types": ["../../views/shared/types.ts"],

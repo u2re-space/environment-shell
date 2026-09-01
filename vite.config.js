@@ -8,6 +8,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import { defineConfig, searchForWorkspaceRoot } from "vite";
 import { getViewResolveAliases, workspaceRoot, viewsRoot } from "../../views/view-resolve-aliases.js";
 import { tryLoadDevSslFromDir } from "../../views/shared/vite.view.config.js";
+import { createSsreAndProcessVitePlugins } from "../../views/shared/vite-ssre.mjs";
 
 const pkgRoot = resolve(import.meta.dirname);
 const crosswordFrontend = resolve(workspaceRoot, "apps/CrossWord/src/frontend");
@@ -27,7 +28,10 @@ function resolveDevServerPort() {
 const port = resolveDevServerPort();
 const useHttps = process.env.VIEW_DEV_HTTP !== "1";
 const projectSsl = tryLoadDevSslFromDir(pkgRoot, { sslDir: "certs" });
-const plugins = useHttps ? (projectSsl !== null ? [] : [basicSsl()]) : [];
+const plugins = [
+    ...(useHttps ? (projectSsl !== null ? [] : [basicSsl()]) : []),
+    ...createSsreAndProcessVitePlugins(pkgRoot),
+];
 const serverHttps = !useHttps ? false : projectSsl !== null ? projectSsl : undefined;
 
 const viteDevOrigin = (process.env.VITE_DEV_ORIGIN || "").trim();

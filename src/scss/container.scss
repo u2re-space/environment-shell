@@ -55,3 +55,37 @@
     position: relative;
     overflow: visible;
 }
+
+/* WHY: Shadow clip + 100lvb :host prints page 1 only; document print.scss cannot restyle :host. */
+@media print {
+    :host {
+        display: block !important;
+        position: static !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        isolation: auto !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+    }
+
+    .esc-stack,
+    .esc-main,
+    .esc-layer {
+        display: block !important;
+        position: static !important;
+        overflow: visible !important;
+        contain: none !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+    }
+
+    .esc-underlying,
+    .esc-overlays {
+        display: none !important;
+    }
+}

@@ -1,0 +1,202 @@
+/*
+ * FIND:print
+ * WHY: Environment DWM clips markdown; Chrome print + `display: contents` on
+ * custom hosts (env-shell-container / ui-window) yields blank pages.
+ * INVARIANT: Keep real boxes; print the viewer window only (stamp / focus / max).
+ */
+
+@media print {
+    :is(html, body):has(.env-shell-root),
+    :is(html, body):has(env-shell-container),
+    :is(html, body):has([data-shell="environment"]),
+    :is(html, body):has(cw-shell-environment) {
+        position: static !important;
+        inset: auto !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        content-visibility: visible !important;
+        display: block !important;
+        inline-size: 100% !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    /*
+     * WHY: CRX/u2re.space `index.html` sets `#app { display: contents }` for minimal-shell.
+     * That flatten + slotted CEs prints empty in Chromium. Environment keeps a box.
+     */
+    :is(html, body):has(.env-shell-root) #app,
+    :is(html, body):has(env-shell-container) #app,
+    :is(html, body):has([data-shell="environment"]) #app,
+    :is(html, body):has(cw-shell-environment) #app,
+    #app:has(.env-shell-root),
+    #app:has(env-shell-container),
+    #app:has(ui-window.env-ui-window),
+    html[data-print-markdown] #app,
+    :is(html, body):has(.env-shell-root) [data-app-layer-root],
+    :is(html, body):has(env-shell-container) [data-app-layer-root],
+    :is(html, body):has([data-shell="environment"]) [data-app-layer-root],
+    :is(html, body):has(cw-shell-environment) [data-app-layer-root],
+    :is(html, body):has(.env-shell-root) [data-app-layer="shell"],
+    :is(html, body):has(env-shell-container) [data-app-layer="shell"],
+    cw-shell-environment,
+    env-shell-container,
+    .env-shell-root {
+        display: block !important;
+        position: static !important;
+        inset: auto !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        content-visibility: visible !important;
+        inline-size: 100% !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+        max-height: none !important;
+        isolation: auto !important;
+    }
+
+    .env-shell-chrome,
+    .env-shell-wallpaper,
+    .env-shell-overlays,
+    [data-env-shell-overlays],
+    .env-shell-app-menu,
+    cw-app-dock,
+    cw-status-bar,
+    [data-window-dock],
+    [data-window-status],
+    [data-app-layer="canvas"],
+    [data-app-layer="orient"],
+    [data-app-layer="overlay"]:not(:has(ui-window.env-ui-window, .wf-frame)) {
+        display: none !important;
+    }
+
+    .env-shell-home-mount,
+    .env-shell-workspace .view-home,
+    .env-shell-workspace .env-home-workspace,
+    .env-shell-workspace .speed-dial-root {
+        display: none !important;
+    }
+
+    /* Hide other apps; never drop the markdown frame (stamp may miss across shadows). */
+    .env-shell-workspace ui-window.env-ui-window:not([data-print-window]):not([data-ui-window-view="viewer"]):not([data-ui-window-view="markdown"]),
+    .env-shell-workspace .wf-frame:not([data-print-window]):not([data-ui-window-view="viewer"]):not([data-wf-managed-view="viewer"]) {
+        display: none !important;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window[minimized],
+    .env-shell-workspace .wf-frame[minimized] {
+        display: none !important;
+    }
+
+    .env-shell-workspace {
+        display: block !important;
+        position: static !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+        inline-size: 100% !important;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window[data-print-window],
+    .env-shell-workspace ui-window.env-ui-window[data-ui-window-view="viewer"],
+    .env-shell-workspace ui-window.env-ui-window[data-ui-window-view="markdown"],
+    .env-shell-workspace ui-window.env-ui-window[data-focused]:has(cw-view-viewer, [data-view-id="viewer"], .view-viewer),
+    .env-shell-workspace ui-window.env-ui-window[maximized]:has(cw-view-viewer, [data-view-id="viewer"], .view-viewer),
+    .env-shell-workspace ui-window.env-ui-window[data-desk-max]:has(cw-view-viewer, [data-view-id="viewer"], .view-viewer),
+    .env-shell-workspace .wf-frame[data-print-window],
+    .env-shell-workspace .wf-frame[data-ui-window-view="viewer"],
+    .env-shell-workspace .wf-frame[data-focused]:has(cw-view-viewer, [data-view-id="viewer"], .view-viewer) {
+        position: static !important;
+        inset: auto !important;
+        left: auto !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        display: block !important;
+        inline-size: 100% !important;
+        max-inline-size: 100% !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        z-index: auto !important;
+        transform: none !important;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window::part(title-handler),
+    .env-shell-workspace ui-window.env-ui-window::part(resizer),
+    .env-shell-workspace ui-window.env-ui-window::part(footer-handler),
+    .env-shell-workspace .wf-frame .wf-titlebar,
+    .env-shell-workspace .wf-frame .wf-resize {
+        display: none !important;
+    }
+
+    .env-shell-workspace ui-window.env-ui-window::part(window-container),
+    .env-shell-workspace ui-window.env-ui-window::part(content-handler),
+    .env-shell-workspace .wf-frame .wf-frame-body,
+    .env-shell-workspace .env-ui-window__body,
+    .env-shell-workspace .env-ui-window__view-host,
+    .env-shell-workspace .wf-view-host,
+    .env-shell-workspace .wf-view-host > .wf-mounted-view,
+    .env-shell-workspace .wf-mounted-view {
+        display: block !important;
+        position: static !important;
+        transform: none !important;
+        contain: none !important;
+        container-type: normal !important;
+        overflow: visible !important;
+        flex: none !important;
+        align-self: stretch !important;
+        inline-size: 100% !important;
+        block-size: auto !important;
+        min-block-size: 0 !important;
+        max-block-size: none !important;
+        height: auto !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .env-shell-workspace .view-viewer,
+    .env-shell-workspace .cw-view-viewer-shell,
+    .env-shell-workspace cw-view-viewer,
+    .env-shell-workspace [data-cw-view-host="true"][data-view-id="viewer"],
+    .env-shell-workspace [data-render-target],
+    .env-shell-workspace .markdown-body,
+    .env-shell-workspace .result-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+        contain: none !important;
+        container-type: normal !important;
+        content-visibility: visible !important;
+        position: static !important;
+        inset: auto !important;
+        block-size: auto !important;
+        max-block-size: none !important;
+        min-block-size: 0 !important;
+        height: auto !important;
+    }
+}

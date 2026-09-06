@@ -33,6 +33,7 @@ import { SHELL_SLOT } from "boot/shell-slots";
 import { setChromeFlyoutShellHost } from "./components/flyout/ChromeFlyout";
 import "./components/calendar/CalendarFlyout";
 import { restoreQuickFilters } from "./components/settings/QuickSettings";
+import { ensureViewportTracking } from "@fest-lib/dom";
 
 export * from "./components/statusbar/statusbar";
 export * from "./components/taskbar/element/TaskBar";
@@ -110,6 +111,7 @@ export function mountEnvironmentChrome(
     host: HTMLElement,
     options: MountEnvironmentChromeOptions
 ): MountEnvironmentChromeResult {
+    ensureViewportTracking();
     const device = attachShellDeviceStatus();
     const nativeCapacitor = isNativeCapacitorHost();
     if (nativeCapacitor) {

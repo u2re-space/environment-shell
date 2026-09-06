@@ -15,12 +15,6 @@
     color-scheme: light dark;
 }
 
-:host-context(html[data-vk-open]) {
-    min-block-size: var(--vv-height, 100svb);
-    block-size: var(--vv-height, 100svb);
-    overflow: hidden;
-}
-
 .esc-stack {
     display: grid;
     grid-template: 1fr / 1fr;

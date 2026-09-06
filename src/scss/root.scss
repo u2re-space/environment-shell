@@ -109,6 +109,11 @@
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    /* INVARIANT: desktop photo stays on the pre-IME layout box, not the IME visual viewport. */
+    inline-size: var(--lv-width, 100lvi);
+    block-size: var(--lv-height, 100lvb);
+    max-inline-size: none;
+    max-block-size: none;
 }
 
 /* Fullscreen / overlay: wallpaper stays edge-to-edge under chrome + windows. */
@@ -145,11 +150,12 @@
     background-color: transparent !important;
 }
 
-html[data-vk-open] .env-shell-root,
-html[data-vk-open] .env-shell-workspace {
-    min-block-size: var(--vv-height, 100svb);
-    block-size: var(--vv-height, 100svb);
-    overflow: hidden;
+html[data-vk-open] .env-shell-wallpaper {
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    block-size: var(--lv-height, 100lvb);
+    inline-size: var(--lv-width, 100lvi);
+    transform: none;
 }
 }
 

@@ -33,7 +33,9 @@ import { SHELL_SLOT } from "boot/shell-slots";
 import { setChromeFlyoutShellHost } from "./components/flyout/ChromeFlyout";
 import "./components/calendar/CalendarFlyout";
 import { restoreQuickFilters } from "./components/settings/QuickSettings";
-import { ensureViewportTracking } from "@fest-lib/dom";
+import { ensureVirtualKeyboardOverlay, ensureViewportTracking } from "@fest-lib/dom";
+
+ensureVirtualKeyboardOverlay();
 
 export * from "./components/statusbar/statusbar";
 export * from "./components/taskbar/element/TaskBar";

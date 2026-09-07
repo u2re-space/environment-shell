@@ -66,8 +66,10 @@
 
     position: relative;
     isolation: isolate;
-    min-block-size: var(--lv-height, 100lvb);
-    block-size: var(--lv-height, 100lvb);
+    min-block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    max-block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    max-inline-size: min(var(--lv-width, 100lvi), var(--screen-fit-inline, 100lvi));
     /* Sync with shadow `:host`: do not clip `position:fixed` descendants (overlay slot context menus). */
     overflow: visible;
 
@@ -110,8 +112,10 @@
     z-index: 0;
     pointer-events: none;
     /* INVARIANT: desktop photo stays on the pre-IME layout box, not the IME visual viewport. */
-    inline-size: var(--lv-width, 100lvi);
-    block-size: var(--lv-height, 100lvb);
+    inline-size: min(var(--lv-width, 100lvi), var(--screen-fit-inline, 100lvi));
+    block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    max-inline-size: min(var(--lv-width, 100lvi), var(--screen-fit-inline, 100lvi));
+    max-block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
     max-inline-size: none;
     max-block-size: none;
 }
@@ -140,9 +144,11 @@
 .env-shell-workspace {
     position: relative;
     z-index: v.$z-shell-workspace;
-    min-block-size: var(--lv-height, 100lvb);
-    block-size: var(--lv-height, 100lvb);
+    min-block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    max-block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
     inline-size: 100%;
+    max-inline-size: min(var(--lv-width, 100lvi), var(--screen-fit-inline, 100lvi));
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -153,8 +159,8 @@
 html[data-vk-open] .env-shell-wallpaper {
     inset-block-start: 0;
     inset-inline-start: 0;
-    block-size: var(--lv-height, 100lvb);
-    inline-size: var(--lv-width, 100lvi);
+    block-size: min(var(--lv-height, 100lvb), var(--screen-fit-block, 100lvb));
+    inline-size: min(var(--lv-width, 100lvi), var(--screen-fit-inline, 100lvi));
     transform: none;
 }
 }

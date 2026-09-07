@@ -9,6 +9,8 @@
 html[data-cwsp-native-shell="capacitor"],
 html[data-cwsp-native-shell="capacitor"] body {
     background: transparent;
+    overflow: hidden !important;
+    overscroll-behavior: none;
     --cwsp-native-safe-top: var(--env-native-safe-top, env(safe-area-inset-top, 0px));
     --cwsp-native-safe-bottom: var(--env-native-safe-bottom, env(safe-area-inset-bottom, 0px));
 }

@@ -38,7 +38,7 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         box-shadow: none;
         border-radius: 0;
         /* WHY: status inset sits on this fill — must match tabs / explorer chrome, not wallpaper. */
-        background: var(--color-surface-container, var(--ui-win-titlebar-bg, Canvas));
+        background: var(--color-surface, var(--ui-win-titlebar-bg, Canvas));
     }
 
     /*
@@ -50,7 +50,7 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         /* WHY: bottom inset is the OS 3-button / gesture pad — do not reserve it again. */
         padding-block-end: 0;
         box-sizing: border-box;
-        background: var(--color-surface-container, var(--sv-surface-2, var(--ui-win-titlebar-bg, Canvas)));
+        background: var(--color-surface, var(--sv-surface-2, var(--ui-win-titlebar-bg, Canvas)));
     }
 
     /*

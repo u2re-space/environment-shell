@@ -128,3 +128,17 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         }
     }
 }
+
+/*
+ * FIND:high-refresh
+ * PERF: settings covers the launcher. Skip the icon grid (plates + blur unders)
+ * so the WebView is not compositing that layer at 90/120 Hz.
+ * Capacitor landscape can exceed the 640px mobile-max query and still be full-bleed.
+ */
+.env-shell-workspace:has(ui-window[data-ui-window-view="settings"][data-mobile-max]:not([minimized])),
+html[data-cwsp-native-shell="capacitor"] .env-shell-workspace:has(ui-window[data-ui-window-view="settings"]:not([minimized])) {
+    .speed-dial-grid[data-grid-layer="icons"] {
+        content-visibility: hidden;
+        contain-intrinsic-size: 100% 100%;
+    }
+}

@@ -38,7 +38,7 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         box-shadow: none;
         border-radius: 0;
         /* WHY: status inset sits on this fill — must match tabs / explorer chrome, not wallpaper. */
-        background: var(--color-surface, var(--ui-win-titlebar-bg, Canvas));
+        background: var(--color-surface-container-low, var(--ui-win-titlebar-bg, Canvas));
     }
 
     /*
@@ -50,7 +50,7 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         /* WHY: bottom inset is the OS 3-button / gesture pad — do not reserve it again. */
         padding-block-end: 0;
         box-sizing: border-box;
-        background: var(--color-surface, var(--sv-surface-2, var(--ui-win-titlebar-bg, Canvas)));
+        background: var(--color-surface-container-low, var(--sv-surface-2, var(--ui-win-titlebar-bg, Canvas)));
     }
 
     /*
@@ -78,7 +78,7 @@ html[data-cwsp-native-shell="capacitor"] .env-shell-root {
         font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
         font-size: 0.875rem;
         line-height: 1.5;
-        background: var(--color-surface-container, var(--color-surface, var(--view-bg, light-dark(#f7f8fc, #1a1d24))));
+        background: var(--color-surface-container-low, var(--color-surface-container-low, var(--view-bg, light-dark(#f7f8fc, #1a1d24))));
         color: var(--color-on-surface, var(--view-fg, light-dark(#1a1c1f, #e8eaed)));
         border: none;
         border-radius: 0;

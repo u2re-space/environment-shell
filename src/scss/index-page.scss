@@ -21,7 +21,7 @@ body {
     font-family: system-ui, "Segoe UI", Roboto, sans-serif;
     background: var(--env-doc-bg, #0b1224);
     color: var(--env-doc-fg, #e2e8f0);
-    color: contrast-color(var(--env-doc-bg, #0b1224));
+    color: --u2-contrast-color(var(--env-doc-bg, #0b1224));
 }
 
 #app {

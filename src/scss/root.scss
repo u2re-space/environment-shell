@@ -184,7 +184,7 @@ html[data-theme="light"] {
         --view-code-bg: var(--color-surface-container-low);
         background-color: var(--view-bg);
         color: var(--view-fg);
-        color: contrast-color(var(--view-bg));
+        color: --u2-contrast-color(var(--view-bg));
     }
 
     /* App Menu tiles sit on chrome — keep theme ink. Speed-dial glyphs use wallpaper contrast below. */
@@ -210,7 +210,7 @@ html[data-theme="dark"] {
         --view-code-bg: var(--color-surface-container);
         background-color: var(--view-bg);
         color: var(--view-fg);
-        color: contrast-color(var(--view-bg));
+        color: --u2-contrast-color(var(--view-bg));
     }
 
     .env-shell-root .env-shell-app-menu__tile-icon .ui-ws-item-icon-mask,
